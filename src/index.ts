@@ -23,7 +23,10 @@ const plugin = {
     version: pluginVersion,
   },
   rules,
-  configs: {} as Record<string, Linter.Config>,
+  configs: {
+    recommended: {} as Linter.Config,
+    strict: {} as Linter.Config
+  } satisfies Record<string, Linter.Config>,
 };
 
 // ---------------------------------------------------------------------------
