@@ -1,9 +1,28 @@
 {
-  "name": "typescript-boilerplate",
-  "version": "1.4.1",
-  "main": "src/main.ts",
+  "name": "eslint-plugin-lintlord",
+  "version": "1.0.0",
+  "description": "A collection of useful ESLint rules for cleaner, more maintainable TypeScript code",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "npx tsx ./src/main.ts",
+    "build": "tsup",
+    "prepack": "npm run build",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "lint": "cross-env TIMING=1 npx eslint",
     "lint:fix": "npm run lint -- --fix",
     "lint:debug": "npm run lint -- --debug",
@@ -19,19 +38,28 @@
     "postinstall": "./scripts/link-codex-skills.sh"
   },
   "keywords": [
-    "typescript",
-    "boilerplate",
     "eslint",
-    "prettier",
-    "modern",
-    "vitest",
-    "template"
+    "eslint-plugin",
+    "eslintplugin",
+    "typescript",
+    "lintlord",
+    "inline-types",
+    "naming",
+    "code-quality"
   ],
   "author": "Dmytro Vakulenko",
-  "license": "ISC",
-  "description": "Modern, scalable TypeScript boilerplate for Node.js projects with strict linting, Prettier formatting, modular structure, and Vitest testing.",
+  "license": "MIT",
+  "peerDependencies": {
+    "eslint": "^8 || ^9 || ^10",
+    "typescript": "^4 || ^5"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
   "dependencies": {
-    "typed-dotenv": "^10.0.2"
+    "@typescript-eslint/utils": "^8.32.0"
   },
   "devDependencies": {
     "@darraghor/eslint-plugin-nestjs-typed": "^7.1.26",
@@ -41,6 +69,8 @@
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^24.12.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "@typescript-eslint/rule-tester": "^8.32.0",
     "@vitest/coverage-v8": "^4.0.18",
     "@vitest/eslint-plugin": "^1.6.10",
     "cross-env": "^10.1.0",
@@ -63,11 +93,13 @@
     "globals": "^17.4.0",
     "json5": "^2.2.3",
     "prettier": "^3.8.1",
+    "tsup": "^8.5.1",
     "type-fest": "^5.4.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.0",
     "unplugin-swc": "^1.5.9",
     "vite-tsconfig-paths": "^6.1.1",
+    "vitepress": "^2.0.0-alpha.15",
     "vitest": "^4.0.18"
   },
   "overrides": {
@@ -78,11 +110,18 @@
       "eslint": "^10"
     }
   },
-  "directories": {
-    "test": "tests"
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git@github-personal:DrSmile444/typescript-boilerplate.git"
+    "url": "git+https://github.com/DrSmile444/eslint-plugin-lintlord.git"
+  },
+  "homepage": "https://drsmile444.github.io/eslint-plugin-lintlord/",
+  "bugs": {
+    "url": "https://github.com/DrSmile444/eslint-plugin-lintlord/issues"
   }
 }

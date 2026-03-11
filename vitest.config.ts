@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import swc from 'unplugin-swc';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
@@ -24,10 +23,6 @@ export default defineConfig({
         'dist/',
         '**/*.spec.ts',
         '**/*.test.ts',
-        '**/*.interface.ts',
-        '**/*.dto.ts',
-        '**/*.entity.ts',
-        '**/main.ts',
       ],
     },
     setupFiles: ['./tests/setup.ts'],

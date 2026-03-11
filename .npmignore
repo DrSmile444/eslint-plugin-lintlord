@@ -1,0 +1,12 @@
+src/
+tests/
+docs/
+*.tgz
+.DS_Store
+vitest.config.ts
+tsup.config.ts
+tsconfig.json
+eslint.config.mjs
+.gitignore
+AGENTS.md
+coverage/

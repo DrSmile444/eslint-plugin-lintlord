@@ -1,6 +1,6 @@
-import { afterAll, vi } from 'vitest';
+import { RuleTester } from '@typescript-eslint/rule-tester';
+import { afterAll } from 'vitest';
 
-// Cleanup after all tests
-afterAll(() => {
-  vi.clearAllMocks();
-});
+// Wire vitest lifecycle into RuleTester so it can clean up after each test suite
+RuleTester.afterAll = afterAll;
+

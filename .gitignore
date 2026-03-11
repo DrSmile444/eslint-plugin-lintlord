@@ -1,8 +1,10 @@
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+dist/
+*.tgz
+.DS_Store
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+coverage/
 
 /tests-examples
 projectStructure.cache.json
