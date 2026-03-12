@@ -145,6 +145,10 @@ describe('no-inline-interface-object-types', () => {
             function run(): { ok: boolean } { return { ok: true }; }
           `,
         },
+        {
+          name: 'arrow function used as callback is not checked',
+          code: 'const arr = [1]; arr.forEach((item: { id: number }) => {});',
+        },
       ],
       invalid: [],
     });
@@ -524,6 +528,100 @@ interface Config { options: ConfigOption2 }`,
             '}',
           ].join('\n'),
           errors: [{ messageId: 'inlineObjectType' }],
+        },
+      ],
+    });
+  });
+
+  // =======================================================================
+  // LEADING COMMENT — insertion before comment
+  // =======================================================================
+
+  describe('leading comment', () => {
+    ruleTester.run(RULE_NAME, noInlineInterfaceObjectTypesRule, {
+      valid: [],
+      invalid: [
+        {
+          name: 'autofix inserts extracted interface before leading comment on anchor node',
+          options: [{ autofix: true }],
+          code: '// options config\ninterface Config { options: { verbose: boolean } }',
+          output: 'interface ConfigOption { verbose: boolean }\n\n// options config\ninterface Config { options: ConfigOption }',
+          errors: [{ messageId: 'inlineObjectType' }],
+        },
+      ],
+    });
+  });
+
+  // =======================================================================
+  // DEEP NAME COLLISION — suffix index > 2
+  // =======================================================================
+
+  describe('name collision — deep suffix', () => {
+    ruleTester.run(RULE_NAME, noInlineInterfaceObjectTypesRule, {
+      valid: [],
+      invalid: [
+        {
+          name: 'appends suffix 3 when both base name and suffix 2 are already declared',
+          options: [{ autofix: true }],
+          code: [
+            'interface ConfigOption { a: string }',
+            'interface ConfigOption2 { b: string }',
+            'interface Config { options: { verbose: boolean } }',
+          ].join('\n'),
+          output: [
+            'interface ConfigOption { a: string }',
+            'interface ConfigOption2 { b: string }',
+            'interface ConfigOption3 { verbose: boolean }',
+            '',
+            'interface Config { options: ConfigOption3 }',
+          ].join('\n'),
+          errors: [{ messageId: 'inlineObjectType' }],
+        },
+        {
+          name: 'type alias is treated as a declared name for collision check',
+          options: [{ autofix: true }],
+          code: 'type ConfigOption = unknown;\ninterface Config { options: { verbose: boolean } }',
+          output:
+            'type ConfigOption = unknown;\ninterface ConfigOption2 { verbose: boolean }\n\ninterface Config { options: ConfigOption2 }',
+          errors: [{ messageId: 'inlineObjectType' }],
+        },
+      ],
+    });
+  });
+
+  // =======================================================================
+  // EXPORTED ARROW FUNCTION
+  // =======================================================================
+
+  describe('exported arrow function', () => {
+    ruleTester.run(RULE_NAME, noInlineInterfaceObjectTypesRule, {
+      valid: [],
+      invalid: [
+        {
+          name: 'autofix adds export to extracted interface for exported arrow function',
+          options: [{ autofix: true }],
+          code: 'export const process = (data: { id: string }) => {};',
+          output: 'export interface ProcessData { id: string }\n\nexport const process = (data: ProcessData) => {};',
+          errors: [{ messageId: 'inlineObjectType' }],
+        },
+      ],
+    });
+  });
+
+  // =======================================================================
+  // CALLBACK / FUNCTION-TYPE PARAMETERS
+  // =======================================================================
+
+  describe('function-type parameter (TSFunctionType)', () => {
+    ruleTester.run(RULE_NAME, noInlineInterfaceObjectTypesRule, {
+      valid: [],
+      invalid: [
+        {
+          name: 'inline object inside callback parameter type is reported',
+          code: 'function run(callback: (opts: { debug: boolean }) => void) {}',
+          errors: [
+            errorWithSuggestion('interface RunCallback { debug: boolean }\n\nfunction run(callback: (opts: RunCallback) => void) {}'),
+          ],
         },
       ],
     });
