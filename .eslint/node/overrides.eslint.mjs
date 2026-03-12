@@ -29,7 +29,10 @@ export default [
           fixStyle: 'separate-type-imports',
         },
       ],
-      '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { allowDefaultCaseForExhaustiveSwitch: true, considerDefaultExhaustiveForUnions: true },
+      ],
       '@typescript-eslint/array-type': 'error',
     },
   },
@@ -58,6 +61,22 @@ export default [
     files: ['**/*.module.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-extraneous-class': 'off',
+    },
+  },
+  // Config and tooling files legitimately import devDependencies
+  {
+    name: 'overrides-dev-files',
+    files: ['*.config.{ts,mjs}', 'docs/**/*.{ts,js,mjs}', 'scripts/**/*.ts'],
+    rules: {
+      'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
+    },
+  },
+  // ESLint rule implementation files must use PascalCase AST node type names as visitor keys
+  {
+    name: 'overrides-eslint-rule-source',
+    files: ['src/rules/**/*.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
     },
   },
 ];

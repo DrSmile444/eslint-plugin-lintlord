@@ -11,7 +11,6 @@ import eslintRulesEslint from './node/eslint-rules.eslint.mjs';
 import importAliasEslint from './node/import-alias.eslint.mjs';
 import nConfig from './node/n.eslint.mjs';
 import namingEslint from './node/naming.eslint.mjs';
-import noBarrelFilesEslint from './node/no-barrel-files.eslint.mjs';
 import noSecretsEslint from './node/no-secrets.eslint.mjs';
 import orderedImportsEslint from './node/ordered-imports.eslint.mjs';
 import overridesEslint from './node/overrides.eslint.mjs';
@@ -86,8 +85,6 @@ export default [
   ...perfectionistEslint,
   // Unicorn plugin for best practices
   ...unicornEslint,
-  // No barrel files rules
-  ...noBarrelFilesEslint,
   // Custom lintlord rules for JS/TS
   ...lintlordEslint,
   // TypeScript and test file overrides
