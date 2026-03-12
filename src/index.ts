@@ -1,9 +1,6 @@
 import type { Linter } from 'eslint';
 
-import {
-  noInlineInterfaceObjectTypesRule,
-  noInlineInterfaceObjectTypesRuleName,
-} from './rules';
+import { noInlineInterfaceObjectTypesRule, noInlineInterfaceObjectTypesRuleName } from './rules';
 
 // Plugin metadata — kept in sync with package.json
 const pluginName = 'eslint-plugin-lintlord';
@@ -25,7 +22,7 @@ const plugin = {
   rules,
   configs: {
     recommended: {} as Linter.Config,
-    strict: {} as Linter.Config
+    strict: {} as Linter.Config,
   } satisfies Record<string, Linter.Config>,
 };
 
@@ -70,13 +67,5 @@ export default plugin;
 
 // Named exports for convenience
 export { rules };
-export {
-  noInlineInterfaceObjectTypesRule,
-  noInlineInterfaceObjectTypesRuleName,
-} from './rules';
 
-
-
-
-
-
+export { noInlineInterfaceObjectTypesRule, noInlineInterfaceObjectTypesRuleName } from './rules';

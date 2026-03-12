@@ -56,9 +56,7 @@ export default defineConfig({
       },
       {
         text: 'Reference',
-        items: [
-          { text: 'Changelog', link: '/reference/changelog' },
-        ],
+        items: [{ text: 'Changelog', link: '/reference/changelog' }],
       },
     ],
 
@@ -76,4 +74,3 @@ export default defineConfig({
     ],
   },
 });
-

@@ -1,6 +1,5 @@
-import { describe, expect, it } from 'vitest';
-
 import { environmentConfig } from '@config/environment.config';
+import { describe, expect, it } from 'vitest';
 
 import { showHello } from '../src/main';
 import { OVERALL_PROJECT_RELEASE_VERSION } from '../src/version';

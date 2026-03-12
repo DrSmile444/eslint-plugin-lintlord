@@ -112,4 +112,3 @@ describe('no-inline-interface-object-types / utils', () => {
     });
   });
 });
-

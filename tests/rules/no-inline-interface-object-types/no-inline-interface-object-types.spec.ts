@@ -160,59 +160,32 @@ describe('no-inline-interface-object-types', () => {
       invalid: [
         {
           name: 'inline object type in interface property (array)',
-          code: `interface LogsData { events: { name: string }[] }`,
-          errors: [
-            errorWithSuggestion(
-              `interface LogsDataEvent { name: string }\n\ninterface LogsData { events: LogsDataEvent[] }`,
-            ),
-          ],
+          code: 'interface LogsData { events: { name: string }[] }',
+          errors: [errorWithSuggestion('interface LogsDataEvent { name: string }\n\ninterface LogsData { events: LogsDataEvent[] }')],
         },
         {
           name: 'inline object type via Array generic',
-          code: `interface LogsData { events: Array<{ name: string }> }`,
-          errors: [
-            errorWithSuggestion(
-              `interface LogsDataEvent { name: string }\n\ninterface LogsData { events: Array<LogsDataEvent> }`,
-            ),
-          ],
+          code: 'interface LogsData { events: Array<{ name: string }> }',
+          errors: [errorWithSuggestion('interface LogsDataEvent { name: string }\n\ninterface LogsData { events: Array<LogsDataEvent> }')],
         },
         {
           name: 'direct inline object type in interface property',
-          code: `interface Config { options: { verbose: boolean } }`,
-          errors: [
-            errorWithSuggestion(
-              `interface ConfigOption { verbose: boolean }\n\ninterface Config { options: ConfigOption }`,
-            ),
-          ],
+          code: 'interface Config { options: { verbose: boolean } }',
+          errors: [errorWithSuggestion('interface ConfigOption { verbose: boolean }\n\ninterface Config { options: ConfigOption }')],
         },
         {
           name: 'multiple inline object properties report separately',
-          code: [
-            `interface Data {`,
-            `  first: { a: string }`,
-            `  second: { b: number }`,
-            `}`,
-          ].join('\n'),
+          code: ['interface Data {', '  first: { a: string }', '  second: { b: number }', '}'].join('\n'),
           errors: [
             errorWithSuggestion(
-              [
-                `interface DataFirst { a: string }`,
-                ``,
-                `interface Data {`,
-                `  first: DataFirst`,
-                `  second: { b: number }`,
-                `}`,
-              ].join('\n'),
+              ['interface DataFirst { a: string }', '', 'interface Data {', '  first: DataFirst', '  second: { b: number }', '}'].join(
+                '\n',
+              ),
             ),
             errorWithSuggestion(
-              [
-                `interface DataSecond { b: number }`,
-                ``,
-                `interface Data {`,
-                `  first: { a: string }`,
-                `  second: DataSecond`,
-                `}`,
-              ].join('\n'),
+              ['interface DataSecond { b: number }', '', 'interface Data {', '  first: { a: string }', '  second: DataSecond', '}'].join(
+                '\n',
+              ),
             ),
           ],
         },
@@ -230,23 +203,17 @@ describe('no-inline-interface-object-types', () => {
       invalid: [
         {
           name: 'inline object type in function parameter',
-          code: `function handleUpdate(params: { id: string }) {}`,
+          code: 'function handleUpdate(params: { id: string }) {}',
           errors: [
-            errorWithSuggestion(
-              `interface HandleUpdateParams { id: string }\n\nfunction handleUpdate(params: HandleUpdateParams) {}`,
-            ),
+            errorWithSuggestion('interface HandleUpdateParams { id: string }\n\nfunction handleUpdate(params: HandleUpdateParams) {}'),
           ],
         },
         {
           name: 'inline object type in multiple function parameters',
-          code: `function run(a: { x: number }, b: { y: string }) {}`,
+          code: 'function run(a: { x: number }, b: { y: string }) {}',
           errors: [
-            errorWithSuggestion(
-              `interface RunA { x: number }\n\nfunction run(a: RunA, b: { y: string }) {}`,
-            ),
-            errorWithSuggestion(
-              `interface RunB { y: string }\n\nfunction run(a: { x: number }, b: RunB) {}`,
-            ),
+            errorWithSuggestion('interface RunA { x: number }\n\nfunction run(a: RunA, b: { y: string }) {}'),
+            errorWithSuggestion('interface RunB { y: string }\n\nfunction run(a: { x: number }, b: RunB) {}'),
           ],
         },
       ],
@@ -263,12 +230,8 @@ describe('no-inline-interface-object-types', () => {
       invalid: [
         {
           name: 'inline object type in arrow function parameter',
-          code: `const processItem = (item: { name: string }) => {};`,
-          errors: [
-            errorWithSuggestion(
-              `interface ProcessItemItem { name: string }\n\nconst processItem = (item: ProcessItemItem) => {};`,
-            ),
-          ],
+          code: 'const processItem = (item: { name: string }) => {};',
+          errors: [errorWithSuggestion('interface ProcessItemItem { name: string }\n\nconst processItem = (item: ProcessItemItem) => {};')],
         },
       ],
     });
@@ -284,19 +247,15 @@ describe('no-inline-interface-object-types', () => {
       invalid: [
         {
           name: 'inline object type in class method parameter',
-          code: [
-            `class UserService {`,
-            `  update(data: { name: string }) {}`,
-            `}`,
-          ].join('\n'),
+          code: ['class UserService {', '  update(data: { name: string }) {}', '}'].join('\n'),
           errors: [
             errorWithSuggestion(
               [
-                `interface UserServiceUpdateData { name: string }`,
-                ``,
-                `class UserService {`,
-                `  update(data: UserServiceUpdateData) {}`,
-                `}`,
+                'interface UserServiceUpdateData { name: string }',
+                '',
+                'class UserService {',
+                '  update(data: UserServiceUpdateData) {}',
+                '}',
               ].join('\n'),
             ),
           ],
@@ -315,37 +274,25 @@ describe('no-inline-interface-object-types', () => {
       invalid: [
         {
           name: 'inline object type in function return type',
-          code: `function check(): { ok: boolean } { return { ok: true }; }`,
-          errors: [
-            errorWithSuggestion(
-              `interface CheckReturn { ok: boolean }\n\nfunction check(): CheckReturn { return { ok: true }; }`,
-            ),
-          ],
+          code: 'function check(): { ok: boolean } { return { ok: true }; }',
+          errors: [errorWithSuggestion('interface CheckReturn { ok: boolean }\n\nfunction check(): CheckReturn { return { ok: true }; }')],
         },
         {
           name: 'inline object type in arrow return type',
-          code: `const check = (): { ok: boolean } => ({ ok: true });`,
-          errors: [
-            errorWithSuggestion(
-              `interface CheckReturn { ok: boolean }\n\nconst check = (): CheckReturn => ({ ok: true });`,
-            ),
-          ],
+          code: 'const check = (): { ok: boolean } => ({ ok: true });',
+          errors: [errorWithSuggestion('interface CheckReturn { ok: boolean }\n\nconst check = (): CheckReturn => ({ ok: true });')],
         },
         {
           name: 'inline object type in method return type',
-          code: [
-            `class Service {`,
-            `  check(): { ok: boolean } { return { ok: true }; }`,
-            `}`,
-          ].join('\n'),
+          code: ['class Service {', '  check(): { ok: boolean } { return { ok: true }; }', '}'].join('\n'),
           errors: [
             errorWithSuggestion(
               [
-                `interface ServiceCheckReturn { ok: boolean }`,
-                ``,
-                `class Service {`,
-                `  check(): ServiceCheckReturn { return { ok: true }; }`,
-                `}`,
+                'interface ServiceCheckReturn { ok: boolean }',
+                '',
+                'class Service {',
+                '  check(): ServiceCheckReturn { return { ok: true }; }',
+                '}',
               ].join('\n'),
             ),
           ],
@@ -365,29 +312,29 @@ describe('no-inline-interface-object-types', () => {
         {
           name: 'autofix extracts interface from interface property',
           options: [{ autofix: true }],
-          code: `interface Config { options: { verbose: boolean } }`,
-          output: `interface ConfigOption { verbose: boolean }\n\ninterface Config { options: ConfigOption }`,
+          code: 'interface Config { options: { verbose: boolean } }',
+          output: 'interface ConfigOption { verbose: boolean }\n\ninterface Config { options: ConfigOption }',
           errors: [{ messageId: 'inlineObjectType' }],
         },
         {
           name: 'autofix extracts interface from function param',
           options: [{ autofix: true }],
-          code: `function handle(opts: { debug: boolean }) {}`,
-          output: `interface HandleOpts { debug: boolean }\n\nfunction handle(opts: HandleOpts) {}`,
+          code: 'function handle(opts: { debug: boolean }) {}',
+          output: 'interface HandleOpts { debug: boolean }\n\nfunction handle(opts: HandleOpts) {}',
           errors: [{ messageId: 'inlineObjectType' }],
         },
         {
           name: 'autofix extracts interface from arrow param',
           options: [{ autofix: true }],
-          code: `const process = (data: { id: string }) => {};`,
-          output: `interface ProcessData { id: string }\n\nconst process = (data: ProcessData) => {};`,
+          code: 'const process = (data: { id: string }) => {};',
+          output: 'interface ProcessData { id: string }\n\nconst process = (data: ProcessData) => {};',
           errors: [{ messageId: 'inlineObjectType' }],
         },
         {
           name: 'autofix extracts interface from return type',
           options: [{ autofix: true }],
-          code: `function check(): { ok: boolean } { return { ok: true }; }`,
-          output: `interface CheckReturn { ok: boolean }\n\nfunction check(): CheckReturn { return { ok: true }; }`,
+          code: 'function check(): { ok: boolean } { return { ok: true }; }',
+          output: 'interface CheckReturn { ok: boolean }\n\nfunction check(): CheckReturn { return { ok: true }; }',
           errors: [{ messageId: 'inlineObjectType' }],
         },
       ],
@@ -404,14 +351,14 @@ describe('no-inline-interface-object-types', () => {
       invalid: [
         {
           name: 'suggestion offered when autofix is off (default)',
-          code: `interface Config { options: { verbose: boolean } }`,
+          code: 'interface Config { options: { verbose: boolean } }',
           errors: [
             {
               messageId: 'inlineObjectType',
               suggestions: [
                 {
                   messageId: 'extractSuggestion',
-                  output: `interface ConfigOption { verbose: boolean }\n\ninterface Config { options: ConfigOption }`,
+                  output: 'interface ConfigOption { verbose: boolean }\n\ninterface Config { options: ConfigOption }',
                 },
               ],
             },
@@ -432,15 +379,15 @@ describe('no-inline-interface-object-types', () => {
         {
           name: 'autofix adds export to extracted interface for exported interface',
           options: [{ autofix: true }],
-          code: `export interface Config { options: { verbose: boolean } }`,
-          output: `export interface ConfigOption { verbose: boolean }\n\nexport interface Config { options: ConfigOption }`,
+          code: 'export interface Config { options: { verbose: boolean } }',
+          output: 'export interface ConfigOption { verbose: boolean }\n\nexport interface Config { options: ConfigOption }',
           errors: [{ messageId: 'inlineObjectType' }],
         },
         {
           name: 'autofix adds export to extracted interface for exported function',
           options: [{ autofix: true }],
-          code: `export function handle(opts: { debug: boolean }) {}`,
-          output: `export interface HandleOpts { debug: boolean }\n\nexport function handle(opts: HandleOpts) {}`,
+          code: 'export function handle(opts: { debug: boolean }) {}',
+          output: 'export interface HandleOpts { debug: boolean }\n\nexport function handle(opts: HandleOpts) {}',
           errors: [{ messageId: 'inlineObjectType' }],
         },
       ],
@@ -483,15 +430,15 @@ interface Config { options: ConfigOption2 }`,
         {
           name: 'singularizes "events" to "Event" in extracted name',
           options: [{ autofix: true }],
-          code: `interface LogsData { events: { name: string }[] }`,
-          output: `interface LogsDataEvent { name: string }\n\ninterface LogsData { events: LogsDataEvent[] }`,
+          code: 'interface LogsData { events: { name: string }[] }',
+          output: 'interface LogsDataEvent { name: string }\n\ninterface LogsData { events: LogsDataEvent[] }',
           errors: [{ messageId: 'inlineObjectType' }],
         },
         {
           name: 'singularizes "companies" to "Company"',
           options: [{ autofix: true }],
-          code: `interface Data { companies: Array<{ name: string }> }`,
-          output: `interface DataCompany { name: string }\n\ninterface Data { companies: Array<DataCompany> }`,
+          code: 'interface Data { companies: Array<{ name: string }> }',
+          output: 'interface DataCompany { name: string }\n\ninterface Data { companies: Array<DataCompany> }',
           errors: [{ messageId: 'inlineObjectType' }],
         },
       ],
@@ -508,19 +455,15 @@ interface Config { options: ConfigOption2 }`,
         {
           name: 'allows inline object with 1 member when minMembersToExtract is 2',
           options: [{ minMembersToExtract: 2 }],
-          code: `interface Data { field: { a: string } }`,
+          code: 'interface Data { field: { a: string } }',
         },
       ],
       invalid: [
         {
           name: 'reports inline object with 2 members when minMembersToExtract is 2',
           options: [{ minMembersToExtract: 2 }],
-          code: `interface Data { field: { a: string; b: number } }`,
-          errors: [
-            errorWithSuggestion(
-              `interface DataField { a: string; b: number }\n\ninterface Data { field: DataField }`,
-            ),
-          ],
+          code: 'interface Data { field: { a: string; b: number } }',
+          errors: [errorWithSuggestion('interface DataField { a: string; b: number }\n\ninterface Data { field: DataField }')],
         },
       ],
     });
@@ -536,21 +479,13 @@ interface Config { options: ConfigOption2 }`,
       invalid: [
         {
           name: 'inline object inside union type',
-          code: `interface Data { value: string | { nested: boolean } }`,
-          errors: [
-            errorWithSuggestion(
-              `interface DataValue { nested: boolean }\n\ninterface Data { value: string | DataValue }`,
-            ),
-          ],
+          code: 'interface Data { value: string | { nested: boolean } }',
+          errors: [errorWithSuggestion('interface DataValue { nested: boolean }\n\ninterface Data { value: string | DataValue }')],
         },
         {
           name: 'inline object inside intersection type',
-          code: `interface Data { value: { a: string } & { b: number } }`,
-          errors: [
-            errorWithSuggestion(
-              `interface DataValue { a: string }\n\ninterface Data { value: DataValue & { b: number } }`,
-            ),
-          ],
+          code: 'interface Data { value: { a: string } & { b: number } }',
+          errors: [errorWithSuggestion('interface DataValue { a: string }\n\ninterface Data { value: DataValue & { b: number } }')],
         },
       ],
     });
@@ -567,34 +502,26 @@ interface Config { options: ConfigOption2 }`,
         {
           name: 'method param uses ClassName + MethodName + ParamName',
           options: [{ autofix: true }],
-          code: [
-            `class UserService {`,
-            `  update(data: { name: string }) {}`,
-            `}`,
-          ].join('\n'),
+          code: ['class UserService {', '  update(data: { name: string }) {}', '}'].join('\n'),
           output: [
-            `interface UserServiceUpdateData { name: string }`,
-            ``,
-            `class UserService {`,
-            `  update(data: UserServiceUpdateData) {}`,
-            `}`,
+            'interface UserServiceUpdateData { name: string }',
+            '',
+            'class UserService {',
+            '  update(data: UserServiceUpdateData) {}',
+            '}',
           ].join('\n'),
           errors: [{ messageId: 'inlineObjectType' }],
         },
         {
           name: 'method return type uses ClassName + MethodName + Return',
           options: [{ autofix: true }],
-          code: [
-            `class UserService {`,
-            `  check(): { ok: boolean } { return { ok: true }; }`,
-            `}`,
-          ].join('\n'),
+          code: ['class UserService {', '  check(): { ok: boolean } { return { ok: true }; }', '}'].join('\n'),
           output: [
-            `interface UserServiceCheckReturn { ok: boolean }`,
-            ``,
-            `class UserService {`,
-            `  check(): UserServiceCheckReturn { return { ok: true }; }`,
-            `}`,
+            'interface UserServiceCheckReturn { ok: boolean }',
+            '',
+            'class UserService {',
+            '  check(): UserServiceCheckReturn { return { ok: true }; }',
+            '}',
           ].join('\n'),
           errors: [{ messageId: 'inlineObjectType' }],
         },
@@ -602,4 +529,3 @@ interface Config { options: ConfigOption2 }`,
     });
   });
 });
-

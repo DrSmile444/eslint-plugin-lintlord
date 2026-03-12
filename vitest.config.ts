@@ -18,12 +18,7 @@ export default defineConfig({
         branches: 80,
         statements: 80,
       },
-      exclude: [
-        'node_modules/',
-        'dist/',
-        '**/*.spec.ts',
-        '**/*.test.ts',
-      ],
+      exclude: ['node_modules/', 'dist/', '**/*.spec.ts', '**/*.test.ts'],
     },
     setupFiles: ['./tests/setup.ts'],
   },

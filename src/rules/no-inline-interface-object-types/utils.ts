@@ -166,11 +166,7 @@ export function findFirstTypeLiteral(node: TSESTree.Node | null | undefined): TS
     }
 
     case 'TSTypeReference': {
-      if (
-        node.typeArguments &&
-        node.typeArguments.type === 'TSTypeParameterInstantiation' &&
-        Array.isArray(node.typeArguments.params)
-      ) {
+      if (node.typeArguments && node.typeArguments.type === 'TSTypeParameterInstantiation' && Array.isArray(node.typeArguments.params)) {
         return node.typeArguments.params.map((n) => findFirstTypeLiteral(n)).find(Boolean) || null;
       }
 
@@ -304,13 +300,16 @@ export function resolveArrowName(arrowNode: TSESTree.ArrowFunctionExpression): s
   return null;
 }
 
+export interface ResolveArrowAnchorReturn {
+  anchorNode: TSESTree.Node;
+  shouldExport: boolean;
+}
+
 /**
  * For an ArrowFunctionExpression, find the enclosing VariableDeclaration anchor node
  * and determine whether it is exported.
  */
-export function resolveArrowAnchor(
-  arrowNode: TSESTree.ArrowFunctionExpression,
-): { anchorNode: TSESTree.Node; shouldExport: boolean } | null {
+export function resolveArrowAnchor(arrowNode: TSESTree.ArrowFunctionExpression): ResolveArrowAnchorReturn | null {
   const declarator = arrowNode.parent;
 
   if (!declarator || declarator.type !== 'VariableDeclarator') {
@@ -358,5 +357,3 @@ export function collectDeclaredNames(programNode: TSESTree.Program, declaredName
     }
   }
 }
-
-

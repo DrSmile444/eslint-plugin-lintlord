@@ -2,7 +2,6 @@ import type { TSESTree } from '@typescript-eslint/utils';
 import { ESLintUtils } from '@typescript-eslint/utils';
 
 import type { MessageIds, NoInlineInterfaceObjectTypesOptions } from './types';
-
 import {
   buildInterfacePropertyName,
   buildNameFromSegments,
@@ -21,9 +20,7 @@ import {
 
 export const RULE_NAME = 'no-inline-interface-object-types';
 
-const createRule = ESLintUtils.RuleCreator(
-  (name) => `https://drsmile444.github.io/eslint-plugin-lintlord/rules/${name}`,
-);
+const createRule = ESLintUtils.RuleCreator((name) => `https://drsmile444.github.io/eslint-plugin-lintlord/rules/${name}`);
 
 export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObjectTypesOptions], MessageIds>({
   name: RULE_NAME,
@@ -121,12 +118,7 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
     /**
      * Build the fixer function: insert the new interface before anchorNode and replace the literal.
      */
-    function makeExtractFix(
-      anchorNode: TSESTree.Node,
-      typeLiteralNode: TSESTree.TSTypeLiteral,
-      newName: string,
-      shouldExport: boolean,
-    ) {
+    function makeExtractFix(anchorNode: TSESTree.Node, typeLiteralNode: TSESTree.TSTypeLiteral, newName: string, shouldExport: boolean) {
       const literalText = sourceCode.getText(typeLiteralNode);
       const prefix = shouldExport ? 'export ' : '';
       const declText = `${prefix}interface ${newName} ${literalText}\n\n`;
@@ -320,4 +312,3 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
     };
   },
 });
-

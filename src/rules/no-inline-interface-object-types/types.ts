@@ -19,4 +19,3 @@ export interface NoInlineInterfaceObjectTypesOptions {
 }
 
 export type MessageIds = 'extractSuggestion' | 'inlineObjectType';
-
