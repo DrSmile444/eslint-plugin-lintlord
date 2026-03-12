@@ -14,7 +14,7 @@ export function toPascalCase(input: string): string {
     .trim()
     .split(/\s+/g)
     .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
 }
 
@@ -26,28 +26,28 @@ export function toPascalCase(input: string): string {
  * - access -> access (protected)
  */
 export function singularize(name: string): string {
-  const s = String(name);
-  const lower = s.toLowerCase();
+  const normalized = String(name);
+  const lower = normalized.toLowerCase();
 
   if (lower.endsWith('ss') || lower.endsWith('us') || lower.endsWith('is') || lower.endsWith('as')) {
-    return s;
+    return normalized;
   }
 
-  if (lower.endsWith('ies') && s.length > 3) {
-    return `${s.slice(0, -3)}y`;
+  if (lower.endsWith('ies') && normalized.length > 3) {
+    return `${normalized.slice(0, -3)}y`;
   }
 
   // classes -> class, boxes -> box, watches -> watch
-  if (/(sses|shes|ches|xes|zes)$/i.test(s) && s.length > 2) {
-    return s.slice(0, -2);
+  if (/(sses|shes|ches|xes|zes)$/i.test(normalized) && normalized.length > 2) {
+    return normalized.slice(0, -2);
   }
 
   // events -> event
-  if (lower.endsWith('s') && !lower.endsWith('ss') && s.length > 1) {
-    return s.slice(0, -1);
+  if (lower.endsWith('s') && !lower.endsWith('ss') && normalized.length > 1) {
+    return normalized.slice(0, -1);
   }
 
-  return s;
+  return normalized;
 }
 
 /**
@@ -137,7 +137,7 @@ export function findFirstTypeLiteral(node: TSESTree.Node | null | undefined): TS
 
     case 'TSUnionType':
     case 'TSIntersectionType': {
-      return (Array.isArray(node.types) && node.types.map((n) => findFirstTypeLiteral(n)).find(Boolean)) || null;
+      return (Array.isArray(node.types) && node.types.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean)) || null;
     }
 
     case 'TSTypeOperator': {
@@ -167,7 +167,7 @@ export function findFirstTypeLiteral(node: TSESTree.Node | null | undefined): TS
 
     case 'TSTypeReference': {
       if (node.typeArguments && node.typeArguments.type === 'TSTypeParameterInstantiation' && Array.isArray(node.typeArguments.params)) {
-        return node.typeArguments.params.map((n) => findFirstTypeLiteral(n)).find(Boolean) || null;
+        return node.typeArguments.params.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean) || null;
       }
 
       return null;
@@ -175,7 +175,7 @@ export function findFirstTypeLiteral(node: TSESTree.Node | null | undefined): TS
 
     case 'TSFunctionType':
     case 'TSConstructorType': {
-      const fromParameters = Array.isArray(node.params) && node.params.map((n) => findFirstTypeLiteral(n)).find(Boolean);
+      const fromParameters = Array.isArray(node.params) && node.params.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean);
 
       return fromParameters || findFirstTypeLiteral(node.returnType);
     }
@@ -190,29 +190,41 @@ export function findFirstTypeLiteral(node: TSESTree.Node | null | undefined): TS
  * Determine whether a TSInterfaceDeclaration is exported.
  */
 export function isExportedInterface(interfaceNode: TSESTree.TSInterfaceDeclaration): boolean {
-  const p = interfaceNode.parent;
+  const parentNode = interfaceNode.parent;
 
-  return Boolean(p && p.type === 'ExportNamedDeclaration' && p.declaration === interfaceNode);
+  if (!parentNode || parentNode.type !== 'ExportNamedDeclaration') {
+    return false;
+  }
+
+  return Object.is(parentNode.declaration, interfaceNode);
 }
 
 /**
  * Determine whether a FunctionDeclaration, VariableDeclaration, or ClassDeclaration is directly exported.
  */
 export function isDirectlyExported(node: TSESTree.Node): boolean {
-  const p = node.parent;
+  const parentNode = node.parent;
 
-  return Boolean(p && p.type === 'ExportNamedDeclaration' && p.declaration === node);
+  if (!parentNode || parentNode.type !== 'ExportNamedDeclaration') {
+    return false;
+  }
+
+  return Object.is(parentNode.declaration, node);
 }
 
 /**
  * Resolve the property name string from a TSPropertySignature key node.
  */
 export function resolvePropertyName(key: TSESTree.Node | null | undefined): string {
-  if (key?.type === 'Identifier') {
+  if (!key) {
+    return 'field';
+  }
+
+  if (key.type === 'Identifier') {
     return key.name;
   }
 
-  if (key?.type === 'Literal' && typeof key.value === 'string') {
+  if (key.type === 'Literal' && typeof key.value === 'string') {
     return key.value;
   }
 
@@ -322,10 +334,10 @@ export function resolveArrowAnchor(arrowNode: TSESTree.ArrowFunctionExpression):
     return null;
   }
 
-  const exported = isDirectlyExported(variableDecl);
-  const anchorNode = exported ? variableDecl.parent! : variableDecl;
+  const isExported = isDirectlyExported(variableDecl);
+  const anchorNode = isExported ? variableDecl.parent! : variableDecl;
 
-  return { anchorNode, shouldExport: exported };
+  return { anchorNode, shouldExport: isExported };
 }
 
 /**
@@ -336,14 +348,14 @@ export function collectDeclaredNames(programNode: TSESTree.Program, declaredName
   const stack: unknown[] = [programNode];
 
   while (stack.length > 0) {
-    const n = stack.pop() as Record<string, unknown> | null;
+    const currentNode = stack.pop() as Record<string, unknown> | null;
 
-    if (!n || typeof n !== 'object' || visited.has(n)) {
+    if (!currentNode || typeof currentNode !== 'object' || visited.has(currentNode)) {
       // skip nullish, non-objects and already-visited nodes
     } else {
-      visited.add(n);
+      visited.add(currentNode);
 
-      const node = n as unknown as TSESTree.Node;
+      const node = currentNode as unknown as TSESTree.Node;
 
       if (node.type === 'TSInterfaceDeclaration' && node.id?.name) {
         declaredNames.add(node.id.name);
@@ -353,7 +365,7 @@ export function collectDeclaredNames(programNode: TSESTree.Program, declaredName
         declaredNames.add(node.id.name);
       }
 
-      pushChildNodes(n, stack);
+      pushChildNodes(currentNode, stack);
     }
   }
 }

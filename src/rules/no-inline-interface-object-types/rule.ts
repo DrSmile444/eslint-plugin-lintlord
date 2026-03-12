@@ -69,9 +69,9 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
     const {
       checkInterfaceProperties = true,
-      checkFunctionParams: checkFunctionParameters = true,
-      checkMethodParams: checkMethodParameters = true,
-      checkArrowFunctionParams: checkArrowFunctionParameters = true,
+      checkFunctionParams: shouldCheckFunctionParameters = true,
+      checkMethodParams: shouldCheckMethodParameters = true,
+      checkArrowFunctionParams: shouldCheckArrowFunctionParameters = true,
       checkReturnTypes = true,
       minMembersToExtract = 1,
       autofix = false,
@@ -223,11 +223,11 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
     // ------------------------------------------------------------------
 
     return {
-      Program(node: TSESTree.Program) {
+      Program: (node: TSESTree.Program) => {
         collectDeclaredNames(node, declaredNames);
       },
 
-      TSInterfaceDeclaration(node: TSESTree.TSInterfaceDeclaration) {
+      TSInterfaceDeclaration: (node: TSESTree.TSInterfaceDeclaration) => {
         if (!checkInterfaceProperties) {
           return;
         }
@@ -251,13 +251,13 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
         }
       },
 
-      FunctionDeclaration(node: TSESTree.FunctionDeclaration) {
+      FunctionDeclaration: (node: TSESTree.FunctionDeclaration) => {
         const functionName = node.id?.name;
         const functionPascal = toPascalCase(functionName || 'Function');
         const anchorNode = isDirectlyExported(node) ? node.parent! : node;
         const shouldExport = isDirectlyExported(node);
 
-        if (checkFunctionParameters && Array.isArray(node.params)) {
+        if (shouldCheckFunctionParameters && Array.isArray(node.params)) {
           checkParameters(node.params, functionPascal, anchorNode, shouldExport);
         }
 
@@ -266,7 +266,7 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
         }
       },
 
-      MethodDefinition(node: TSESTree.MethodDefinition) {
+      MethodDefinition: (node: TSESTree.MethodDefinition) => {
         const methodName = resolveKeyName(node.key);
         const methodPascal = toPascalCase(methodName || 'Method');
         const className = getClassNameForMethod(node);
@@ -281,7 +281,7 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
         const callablePascal = buildNameFromSegments([className, methodPascal]);
 
-        if (checkMethodParameters) {
+        if (shouldCheckMethodParameters) {
           checkParameters(callable.params, callablePascal, anchorNode, shouldExport);
         }
 
@@ -290,7 +290,7 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
         }
       },
 
-      ArrowFunctionExpression(node: TSESTree.ArrowFunctionExpression) {
+      ArrowFunctionExpression: (node: TSESTree.ArrowFunctionExpression) => {
         const arrowAnchor = resolveArrowAnchor(node);
 
         if (!arrowAnchor) {
@@ -301,7 +301,7 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
         const arrowName = resolveArrowName(node);
         const arrowPascal = toPascalCase(arrowName || 'ArrowFunction');
 
-        if (checkArrowFunctionParameters && Array.isArray(node.params)) {
+        if (shouldCheckArrowFunctionParameters && Array.isArray(node.params)) {
           checkParameters(node.params, arrowPascal, anchorNode, shouldExport);
         }
 

@@ -4,7 +4,7 @@ import { noInlineInterfaceObjectTypesRule, noInlineInterfaceObjectTypesRuleName 
 
 // Plugin metadata — kept in sync with package.json
 const pluginName = 'eslint-plugin-lintlord';
-const pluginVersion = '1.0.0';
+const pluginVersion = '1.0.1';
 
 // ---------------------------------------------------------------------------
 // Plugin object
