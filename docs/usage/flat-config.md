@@ -69,10 +69,5 @@ import eslint from '@eslint/js';
 import lintlord from 'eslint-plugin-lintlord';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  lintlord.configs.recommended,
-);
+export default tseslint.config(eslint.configs.recommended, ...tseslint.configs.recommended, lintlord.configs.recommended);
 ```
-

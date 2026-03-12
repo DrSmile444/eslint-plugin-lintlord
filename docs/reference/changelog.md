@@ -15,4 +15,3 @@
 - Added `strict` config (all rules at `error` with autofix)
 - Full VitePress documentation site
 - Comprehensive test suite with 40+ test cases
-
