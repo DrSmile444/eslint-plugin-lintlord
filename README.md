@@ -49,11 +49,12 @@ It is a good fit for teams that want:
 
 ## What it does
 
-Today the plugin is intentionally focused. It ships one rule that targets one common TypeScript code smell:
+The plugin ships focused rules that target common TypeScript and JavaScript code problems:
 
-| Rule                                                                                                                           | Description                                                               | Fixable | Recommended | Strict   |
-| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- | ------- | ----------- | -------- |
-| [no-inline-interface-object-types](https://drsmile444.github.io/eslint-plugin-lintlord/rules/no-inline-interface-object-types) | Disallow inline object type literals and extract them to named interfaces | ✅      | ⚠️ warn     | ❌ error |
+| Rule                                                                                                                           | Description                                                                    | Fixable | Recommended | Strict   |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ------- | ----------- | -------- |
+| [no-inline-interface-object-types](https://drsmile444.github.io/eslint-plugin-lintlord/rules/no-inline-interface-object-types) | Disallow inline object type literals and extract them to named interfaces      | ✅      | ⚠️ warn     | ❌ error |
+| [prefer-logger](https://drsmile444.github.io/eslint-plugin-lintlord/rules/prefer-logger)                                       | Disallow `console.log` (or all `console` calls) in favor of a dedicated logger | 💡      | ⚠️ warn     | ❌ error |
 
 The rule checks inline object types inside:
 
@@ -249,6 +250,29 @@ More examples and complete option details:
 - [Rule docs](https://drsmile444.github.io/eslint-plugin-lintlord/rules/no-inline-interface-object-types)
 - [Flat config usage](https://drsmile444.github.io/eslint-plugin-lintlord/usage/flat-config)
 - [Legacy config usage](https://drsmile444.github.io/eslint-plugin-lintlord/usage/eslintrc)
+
+### `prefer-logger`
+
+Flags `console.log` as a debugging leftover and pushes toward intentional logging:
+
+```js
+// ❌ reported — debug leftover
+console.log('user id:', userId);
+
+// ✅ allowed — intentional output (log-only mode default)
+console.info('server started on port 3000');
+```
+
+A suggestion replaces `console.log` with `console.info`. For teams using a dedicated logger (pino, winston), set `mode: 'all'` to ban every `console.*` call.
+
+Useful options:
+
+- `mode: 'log-only'` (default): restrict only `console.log`, suggest `console.info`
+- `mode: 'all'`: restrict all `console.*` methods — enforce a dedicated logger
+
+More examples and complete option details:
+
+- [Rule docs](https://drsmile444.github.io/eslint-plugin-lintlord/rules/prefer-logger)
 
 ---
 

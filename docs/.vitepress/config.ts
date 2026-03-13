@@ -45,6 +45,7 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/rules/' },
           { text: 'no-inline-interface-object-types', link: '/rules/no-inline-interface-object-types' },
+          { text: 'prefer-logger', link: '/rules/prefer-logger' },
         ],
       },
       {

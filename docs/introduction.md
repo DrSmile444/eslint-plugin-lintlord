@@ -25,6 +25,7 @@ Lintlord rules help you maintain consistency by catching these patterns automati
 | Rule                                                                        | Description                                                                         |
 | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | [no-inline-interface-object-types](/rules/no-inline-interface-object-types) | Disallow inline `{ ... }` object type literals and extract them to named interfaces |
+| [prefer-logger](/rules/prefer-logger)                                       | Disallow `console.log` (or all `console` calls) in favor of a dedicated logger      |
 
 ## Getting Started
 
