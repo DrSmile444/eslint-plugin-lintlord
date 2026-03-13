@@ -70,13 +70,13 @@ function check(): CheckReturn {
 
 The extracted interface names are generated automatically based on context:
 
-| Context | Pattern | Example |
-|---------|---------|---------|
-| Interface property | `ParentName` + `SingularizedPropertyName` | `LogsData.events` → `LogsDataEvent` |
-| Function param | `FunctionNamePascal` + `ParamNamePascal` | `handleUpdate(params)` → `HandleUpdateParams` |
-| Method param | `ClassName` + `MethodName` + `ParamName` | `UserService.update(data)` → `UserServiceUpdateData` |
-| Arrow param | `ArrowNamePascal` + `ParamNamePascal` | `processItem(item)` → `ProcessItemItem` |
-| Return type | `CallableName` + `Return` | `check(): {...}` → `CheckReturn` |
+| Context            | Pattern                                   | Example                                              |
+| ------------------ | ----------------------------------------- | ---------------------------------------------------- |
+| Interface property | `ParentName` + `SingularizedPropertyName` | `LogsData.events` → `LogsDataEvent`                  |
+| Function param     | `FunctionNamePascal` + `ParamNamePascal`  | `handleUpdate(params)` → `HandleUpdateParams`        |
+| Method param       | `ClassName` + `MethodName` + `ParamName`  | `UserService.update(data)` → `UserServiceUpdateData` |
+| Arrow param        | `ArrowNamePascal` + `ParamNamePascal`     | `processItem(item)` → `ProcessItemItem`              |
+| Return type        | `CallableName` + `Return`                 | `check(): {...}` → `CheckReturn`                     |
 
 ## Options
 
@@ -187,3 +187,9 @@ The autofix (or suggestion) will:
 }
 ```
 
+## Built-in configs
+
+| Config        | Severity | Options         |
+| ------------- | -------- | --------------- |
+| `recommended` | `warn`   |                 |
+| `strict`      | `error`  | `autofix: true` |

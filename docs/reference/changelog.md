@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.0 — 2026-03-12
+
+### ✨ New Rule: `prefer-logger`
+
+- Added [`prefer-logger`](/rules/prefer-logger) rule
+  - `log-only` mode (default): flags `console.log` as a debug tool and suggests replacing it with `console.info` for intentional output
+  - `all` mode: bans every `console.*` call, enforcing a dedicated logger (e.g. pino, winston)
+  - Provides a one-click suggestion to upgrade `console.log` → `console.info` in `log-only` mode
+  - Included in `recommended` config at `warn` with `mode: 'log-only'`
+  - Included in `strict` config at `error` with `mode: 'all'`
+
+---
+
 ## 1.0.0
 
 ### 🎉 Initial Release
@@ -15,4 +28,3 @@
 - Added `strict` config (all rules at `error` with autofix)
 - Full VitePress documentation site
 - Comprehensive test suite with 40+ test cases
-

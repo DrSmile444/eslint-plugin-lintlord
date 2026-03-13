@@ -44,7 +44,7 @@ export default [
 import lintlord from 'eslint-plugin-lintlord';
 
 export default [
-  // "recommended" — all rules at "warn"
+  // "recommended" — safe way to refactor with a mix of "warn" and "error" rules, no autofix
   lintlord.configs.recommended,
 
   // or "strict" — all rules at "error" with autofix
@@ -60,4 +60,3 @@ See [Legacy .eslintrc](/usage/eslintrc) for configuration with the `.eslintrc` f
 
 - Browse all [Rules](/rules/)
 - Learn about [Flat Config usage](/usage/flat-config) in detail
-

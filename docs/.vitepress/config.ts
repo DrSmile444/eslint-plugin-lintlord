@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitepress';
 
+import { version } from '../../package.json';
+
 function resolveBase(): string {
   if (!process.env.GITHUB_ACTIONS) {
     return '/';
@@ -29,6 +31,14 @@ export default defineConfig({
     nav: [
       { text: 'Get Started', link: '/getting-started' },
       { text: 'Rules', link: '/rules/' },
+      {
+        text: `v${version}`,
+        items: [
+          { text: `v${version} (current)`, link: '/' },
+          { text: 'Changelog', link: '/reference/changelog' },
+          { text: 'Release Notes', link: 'https://github.com/DrSmile444/eslint-plugin-lintlord/releases' },
+        ],
+      },
     ],
 
     sidebar: [
@@ -45,6 +55,7 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/rules/' },
           { text: 'no-inline-interface-object-types', link: '/rules/no-inline-interface-object-types' },
+          { text: 'prefer-logger', link: '/rules/prefer-logger' },
         ],
       },
       {
