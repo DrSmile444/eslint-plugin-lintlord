@@ -5,7 +5,7 @@
 <h1 align="center">ESLint Plugin Lintlord</h1>
 
 <p align="center">
-  Practical ESLint rules for TypeScript teams that want cleaner types, reusable contracts, and code that is easier to review.
+  Practical ESLint rules for TypeScript teams that want clearer types, cleaner logging habits, and code that is easier to review.
 </p>
 
 <p align="center">
@@ -19,31 +19,40 @@
 
 ## Why
 
-TypeScript makes it easy to write inline object types:
+Many codebases drift in two predictable ways:
 
 ```ts
 interface LogsData {
   events: Array<{ name: string; createdAt: string }>;
 }
 
-function handleUpdate(params: { id: string; dryRun: boolean }) {}
+function handleUpdate(params: { id: string; dryRun: boolean }) {
+  console.log('updating', params.id);
+}
 ```
 
-That style is convenient at first, but it scales poorly:
+Both patterns are convenient in the moment, but they age badly:
 
 - **Shapes become hard to reuse** when the same object structure appears in multiple places.
 - **Types get harder to scan** because important contracts are buried inside properties, parameters, and return types.
+- **Debug leftovers slip into commits** because `console.log` is fast to add and easy to forget.
+- **Logging intent gets muddled** when debugging output and intentional runtime messages look the same.
 - **Refactoring is less ergonomic** because named interfaces are easier to jump to, rename, and discuss in code review.
-- **Consistency drifts over time** when some shapes are extracted and others stay inline.
+- **Consistency drifts over time** when some teams extract types, some keep them inline, and console usage varies by file.
 
-`eslint-plugin-lintlord` exists to enforce a simple rule with a practical payoff: when an object shape matters, give it a name.
+`eslint-plugin-lintlord` exists to enforce a small set of practical rules with clear payoffs:
+
+- When an object shape matters, give it a name.
+- When a log statement matters, make it intentional.
 
 It is a good fit for teams that want:
 
 - More readable TypeScript APIs
 - Reusable interface contracts instead of duplicated `{ ... }` shapes
+- Fewer accidental `console.log` leftovers in committed code
+- Clearer separation between debugging output and real logging
 - Better IDE navigation and review discussions
-- Gradual adoption with warnings first, or strict autofix-driven enforcement
+- Gradual adoption for type cleanup, or strict autofix-driven enforcement
 
 ---
 
@@ -54,9 +63,9 @@ The plugin ships focused rules that target common TypeScript and JavaScript code
 | Rule                                                                                                                           | Description                                                                    | Fixable | Recommended | Strict   |
 | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ------- | ----------- | -------- |
 | [no-inline-interface-object-types](https://drsmile444.github.io/eslint-plugin-lintlord/rules/no-inline-interface-object-types) | Disallow inline object type literals and extract them to named interfaces      | ✅      | ⚠️ warn     | ❌ error |
-| [prefer-logger](https://drsmile444.github.io/eslint-plugin-lintlord/rules/prefer-logger)                                       | Disallow `console.log` (or all `console` calls) in favor of a dedicated logger | 💡      | ⚠️ warn     | ❌ error |
+| [prefer-logger](https://drsmile444.github.io/eslint-plugin-lintlord/rules/prefer-logger)                                       | Disallow `console.log` (or all `console` calls) in favor of a dedicated logger | 💡      | ❌ error    | ❌ error |
 
-The rule checks inline object types inside:
+`no-inline-interface-object-types` checks inline object types inside:
 
 - Interface properties
 - Function parameters
@@ -66,13 +75,19 @@ The rule checks inline object types inside:
 
 When enabled with `autofix: true`, it can extract those inline shapes into generated interface names for you.
 
+`prefer-logger` targets two common logging policies:
+
+- `mode: 'log-only'` flags only `console.log` and suggests `console.info`
+- `mode: 'all'` bans all `console.*` calls for teams using a dedicated logger
+
 ---
 
-## Example
+## Examples
 
-### Before
+### Type extraction
 
 ```ts
+// Before
 interface LogsData {
   events: Array<{ name: string; createdAt: string }>;
 }
@@ -80,11 +95,8 @@ interface LogsData {
 function handleUpdate(params: { id: string; dryRun: boolean }) {
   return { ok: !params.dryRun };
 }
-```
 
-### After
-
-```ts
+// After
 interface LogsDataEvent {
   name: string;
   createdAt: string;
@@ -108,7 +120,27 @@ function handleUpdate(params: HandleUpdateParams): HandleUpdateReturn {
 }
 ```
 
-This is the core benefit of the plugin: code becomes more explicit without relying on reviewers to catch the pattern manually.
+### Logging hygiene
+
+```ts
+// Before
+console.log('server started on port', port);
+
+// After
+console.info('server started on port', port);
+```
+
+Or, in stricter teams:
+
+```ts
+// Before
+console.warn('deprecated endpoint');
+
+// After
+logger.warn('deprecated endpoint');
+```
+
+The core benefit of the plugin is consistency in places where codebases usually drift: shared types and logging habits.
 
 ---
 
@@ -169,6 +201,7 @@ export default [
           minMembersToExtract: 2,
         },
       ],
+      'lintlord/prefer-logger': ['error', { mode: 'log-only' }],
     },
   },
 ];
@@ -199,7 +232,8 @@ export default [
   "parser": "@typescript-eslint/parser",
   "plugins": ["lintlord"],
   "rules": {
-    "lintlord/no-inline-interface-object-types": "warn"
+    "lintlord/no-inline-interface-object-types": "warn",
+    "lintlord/prefer-logger": ["error", { "mode": "log-only" }]
   }
 }
 ```
@@ -210,12 +244,12 @@ export default [
 
 | Config        | Description                                                         |
 | ------------- | ------------------------------------------------------------------- |
-| `recommended` | Enables all rules at `warn` for gradual adoption                    |
-| `strict`      | Enables all rules at `error` and turns on `autofix` where supported |
+| `recommended` | Enables `no-inline-interface-object-types` at `warn` and `prefer-logger` at `error` |
+| `strict`      | Enables `no-inline-interface-object-types` at `error` with `autofix: true`, and `prefer-logger` at `error` with `mode: 'all'` |
 
-`recommended` is a good default if you want the plugin to guide cleanup over time.
+`recommended` is a good default if you want gradual type cleanup while still treating stray `console.log` calls as committed-code mistakes.
 
-`strict` is better when your team already agrees on the pattern and wants `eslint --fix` to do most of the work.
+`strict` is better when your team already agrees on both patterns and wants automatic type extraction plus full logger enforcement.
 
 ---
 
