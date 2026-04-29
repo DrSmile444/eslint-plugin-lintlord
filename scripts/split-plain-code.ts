@@ -104,8 +104,12 @@ interface Section {
 
 // Improved regex: avoids super-linear backtracking and empty alternatives
 // eslint-disable-next-line sonarjs/slow-regex
-const HEADER_RE = /^\s*(?:\/\/|#|;|--|<!--)\s*File:\s*([^\s][^\n]*)\s*(?:-->)?\s*$/;
+const HEADER_RE = /^\s*(?:\/\/|#|;|--|<!--)\s*File:\s*(\S[^\n]*)\s*(?:-->\s*)?$/;
 
+/**
+ * Parse CLI arguments into a structured options object.
+ * @param argv
+ */
 function parseArguments(argv: string[]) {
   let bundlePath: string | undefined;
   let outputDirectory: string | undefined;
@@ -147,8 +151,12 @@ function parseArguments(argv: string[]) {
   return { bundlePath, outputDirectory, isDryRun, shouldStripMdFences };
 }
 
+/**
+ * Normalize a relative path by converting backslashes and stripping a leading `./`.
+ * @param relativePath
+ */
 function normalizeRelativePath(relativePath: string): string {
-  if (path.isAbsolute(relativePath) || /^[A-Za-z]:[\\/]/.test(relativePath)) {
+  if (path.isAbsolute(relativePath) || /^[A-Z]:[\\/]/i.test(relativePath)) {
     throw new Error(`Absolute paths are not allowed: ${relativePath}`);
   }
 
@@ -157,6 +165,11 @@ function normalizeRelativePath(relativePath: string): string {
   return normalized.replace(/^.\//, '');
 }
 
+/**
+ * Resolve a relative path under root, rejecting any path that escapes the output directory.
+ * @param root
+ * @param relativePath
+ */
 function safeResolveUnder(root: string, relativePath: string): string {
   const cleanRelative = relativePath.replaceAll('\0', '');
   const abs = path.resolve(root, cleanRelative);
@@ -169,6 +182,10 @@ function safeResolveUnder(root: string, relativePath: string): string {
   return abs;
 }
 
+/**
+ * Parse a bundle string into sections, each identified by a file header comment.
+ * @param raw
+ */
 function parseSections(raw: string): Section[] {
   const lines = raw.split(/\r?\n/);
   const sections: Section[] = [];
@@ -201,6 +218,10 @@ function parseSections(raw: string): Section[] {
   return sections;
 }
 
+/**
+ * Strip a surrounding Markdown code fence from a section's content when one is detected.
+ * @param text
+ */
 function maybeStripMdFence(text: string): string {
   const array = text.split(/\r?\n/);
   let start = 0;
@@ -232,6 +253,9 @@ function maybeStripMdFence(text: string): string {
   return text;
 }
 
+/**
+ * Entry point: parse arguments, split the bundle, and write each section to disk.
+ */
 async function main() {
   const { bundlePath, outputDirectory, isDryRun, shouldStripMdFences } = parseArguments(process.argv.slice(2));
 

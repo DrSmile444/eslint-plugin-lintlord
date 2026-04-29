@@ -1,4 +1,4 @@
-/* eslint-disable sonarjs/slow-regex,no-continue,no-plusplus,no-use-before-define,global-require,unicorn/no-process-exit,sonarjs/no-alphabetical-sort,unicorn/no-array-sort,security/detect-non-literal-fs-filename,security/detect-object-injection,security/detect-unsafe-regex */
+/* eslint-disable sonarjs/slow-regex,no-continue,no-plusplus,no-use-before-define,global-require,unicorn/no-process-exit,sonarjs/no-alphabetical-sort,unicorn/no-array-sort,security/detect-non-literal-fs-filename,security/detect-object-injection */
 import { spawn } from 'node:child_process';
 import type { Dirent } from 'node:fs';
 import { promises as fs } from 'node:fs';
@@ -37,6 +37,7 @@ const DEFAULT_EXCLUDE_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '
  *   await import('pkg')
  *
  * It ignores relative/absolute paths and filters built-ins later.
+ * @param code
  */
 function extractModuleSpecifiers(code: string): string[] {
   const specs = new Set<string>();
@@ -65,7 +66,10 @@ function extractModuleSpecifiers(code: string): string[] {
   return [...specs];
 }
 
-/** Convert 'lodash/map' -> 'lodash', '@types/node/fs' -> '@types/node' */
+/**
+ * Convert 'lodash/map' -> 'lodash', '@types/node/fs' -> '@types/node'
+ * @param spec
+ */
 function toTopLevelPackageName(spec: string): string {
   if (spec.startsWith('@')) {
     const parts = spec.split('/');
@@ -76,10 +80,20 @@ function toTopLevelPackageName(spec: string): string {
   return spec.split('/')[0];
 }
 
+/**
+ * Return true when a module specifier looks like an npm package (not a relative/absolute path or URL).
+ * @param spec
+ */
 function isPackageLike(spec: string): boolean {
   return !!spec && !spec.startsWith('.') && !spec.startsWith('/') && !spec.includes(':');
 }
 
+/**
+ * Recursively yield all files matching the given extensions, skipping excluded directories.
+ * @param directory
+ * @param includeExtension
+ * @param excludeDirectories
+ */
 async function* walkDirectory(directory: string, includeExtension: Set<string>, excludeDirectories: Set<string>): AsyncGenerator<string> {
   let entries: Dirent[];
 
@@ -106,6 +120,10 @@ async function* walkDirectory(directory: string, includeExtension: Set<string>, 
   }
 }
 
+/**
+ * Read and parse a JSON file, returning null on any error.
+ * @param filePath
+ */
 async function readJson<T = unknown>(filePath: string): Promise<T | null> {
   try {
     const txt = await fs.readFile(filePath, 'utf8');
@@ -116,6 +134,11 @@ async function readJson<T = unknown>(filePath: string): Promise<T | null> {
   }
 }
 
+/**
+ * Detect the package manager in use by checking lockfiles, falling back to npm.
+ * @param projectDirectory
+ * @param forced
+ */
 function detectPackageManager(projectDirectory: string, forced?: CliOptions['packageManager']) {
   if (forced) {
     return forced;
@@ -166,6 +189,10 @@ function detectPackageManager(projectDirectory: string, forced?: CliOptions['pac
   return 'npm'; // default fallback
 }
 
+/**
+ * Synchronously check whether a file is accessible on disk.
+ * @param filePath
+ */
 function safeExists(filePath: string): boolean {
   try {
     // Using sync here is fine: tiny calls and avoids race conditions
@@ -177,6 +204,11 @@ function safeExists(filePath: string): boolean {
   }
 }
 
+/**
+ * Check whether a top-level package is present in the project's node_modules directory.
+ * @param projectDirectory
+ * @param topLevel
+ */
 function isInstalledInNodeModules(projectDirectory: string, topLevel: string): boolean {
   // Support scoped packages in node_modules
   const nmPath = path.join(projectDirectory, 'node_modules', topLevel);
@@ -184,7 +216,10 @@ function isInstalledInNodeModules(projectDirectory: string, topLevel: string): b
   return safeExists(nmPath);
 }
 
-// Helper to get tsconfig path aliases
+/**
+ * Read tsconfig path alias keys so they can be excluded from package lookups.
+ * @param tsconfigPath
+ */
 function getTsconfigAliases(tsconfigPath: string): string[] {
   try {
     const pathsObject = resolveTsconfigPaths(tsconfigPath);
@@ -195,7 +230,12 @@ function getTsconfigAliases(tsconfigPath: string): string[] {
   }
 }
 
-// Helper to process a file and collect referenced packages
+/**
+ * Parse a source file and add every referenced npm package name to the set.
+ * @param file
+ * @param tsconfigAliases
+ * @param referenced
+ */
 async function collectReferencedFromFile(file: string, tsconfigAliases: string[], referenced: Set<string>) {
   const code = await fs.readFile(file, 'utf8');
 
@@ -223,6 +263,10 @@ interface FindUninstalledDepsReturn {
   uninstalled: string[];
 }
 
+/**
+ * Walk the project directory, collect all referenced package names, and return those not installed.
+ * @param root
+ */
 async function findUninstalledDeps(root: string): Promise<FindUninstalledDepsReturn> {
   const referenced = new Set<string>();
 
@@ -239,6 +283,13 @@ async function findUninstalledDeps(root: string): Promise<FindUninstalledDepsRet
   return { referencedTopLevel: referenced, uninstalled };
 }
 
+/**
+ * Install a list of packages using the detected package manager.
+ * @param projectDirectory
+ * @param pkgs
+ * @param pm
+ * @param development
+ */
 async function installDependencies(
   projectDirectory: string,
   pkgs: string[],
@@ -261,11 +312,18 @@ async function installDependencies(
   return new Promise<number>((resolve, reject) => {
     const child = spawn(cmd, parsedArguments, { stdio: 'inherit', cwd: projectDirectory, shell: process.platform === 'win32' });
 
-    child.on('close', (code) => resolve(code ?? 1));
+    child.on('close', (code) => {
+      resolve(code ?? 1);
+    });
+
     child.on('error', reject);
   });
 }
 
+/**
+ * Parse CLI arguments into a structured options object.
+ * @param argv
+ */
 function parseArguments(argv: string[]): CliOptions {
   const out: CliOptions = { dir: '', dryRun: false, dev: false };
 
@@ -301,6 +359,10 @@ function parseArguments(argv: string[]): CliOptions {
   return out;
 }
 
+/**
+ * Print usage information and exit with the given code.
+ * @param code
+ */
 function printHelpAndExit(code = 0): never {
   console.info(
     `
@@ -321,12 +383,15 @@ Examples:
   process.exit(code);
 }
 
+/**
+ * Entry point: scan the project for missing deps and optionally install them.
+ */
 async function main() {
   const options = parseArguments(process.argv);
 
   const packageJsonPath = path.join('package.json');
 
-  const packageJson = await readJson<unknown>(packageJsonPath);
+  const packageJson = await readJson(packageJsonPath);
 
   if (!packageJson) {
     console.error(`Error: package.json not found under ${options.dir}`);
