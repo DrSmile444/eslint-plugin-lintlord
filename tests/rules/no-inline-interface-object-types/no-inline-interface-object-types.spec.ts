@@ -14,6 +14,7 @@ const ruleTester = new RuleTester({
 /**
  * Helper: build an error with suggestions (default / suggestion mode).
  * When `autofix` is off the rule emits suggestions, so the test must declare them.
+ * @param expectedOutput
  */
 function errorWithSuggestion(expectedOutput: string) {
   return {

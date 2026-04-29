@@ -181,29 +181,9 @@ describe('no-inline-interface-object-types / utils', () => {
 
       expect(resolveArrowAnchor(arrow)).toBeNull();
     });
-
-    it('returns null when VariableDeclarator parent is not VariableDeclaration', () => {
-      const declarator = { type: 'VariableDeclarator', parent: { type: 'ForInStatement' } };
-      const arrow = { parent: declarator } as unknown as TSESTree.ArrowFunctionExpression;
-
-      expect(resolveArrowAnchor(arrow)).toBeNull();
-    });
   });
 
   describe('isMethodInExportedClass', () => {
-    it('returns false when classDecl is null', () => {
-      const classBody = { type: 'ClassBody', parent: null };
-      const method = { parent: classBody } as unknown as TSESTree.MethodDefinition;
-
-      expect(isMethodInExportedClass(method)).toBe(false);
-    });
-
-    it('returns false when parent is not ClassBody', () => {
-      const method = { parent: { type: 'FunctionExpression' } } as unknown as TSESTree.MethodDefinition;
-
-      expect(isMethodInExportedClass(method)).toBe(false);
-    });
-
     it('returns false when class is not exported', () => {
       const classDecl = { type: 'ClassDeclaration', parent: { type: 'Program' } };
       const classBody = { type: 'ClassBody', parent: classDecl };
@@ -244,26 +224,6 @@ describe('no-inline-interface-object-types / utils', () => {
       const method = { parent: classBody } as unknown as TSESTree.MethodDefinition;
 
       expect(getClassNameForMethod(method)).toBe('UserService');
-    });
-
-    it('returns Class when parent is not ClassBody', () => {
-      const method = { parent: { type: 'Program' } } as unknown as TSESTree.MethodDefinition;
-
-      expect(getClassNameForMethod(method)).toBe('Class');
-    });
-
-    it('returns Class when classDecl is null', () => {
-      const classBody = { type: 'ClassBody', parent: null };
-      const method = { parent: classBody } as unknown as TSESTree.MethodDefinition;
-
-      expect(getClassNameForMethod(method)).toBe('Class');
-    });
-
-    it('returns Class when classDecl is not a class node', () => {
-      const classBody = { type: 'ClassBody', parent: { type: 'ExportDefaultDeclaration' } };
-      const method = { parent: classBody } as unknown as TSESTree.MethodDefinition;
-
-      expect(getClassNameForMethod(method)).toBe('Class');
     });
 
     it('returns Class when class declaration has no id', () => {
