@@ -60,4 +60,3 @@ See [Legacy .eslintrc](/usage/eslintrc) for configuration with the `.eslintrc` f
 
 - Browse all [Rules](/rules/)
 - Learn about [Flat Config usage](/usage/flat-config) in detail
-

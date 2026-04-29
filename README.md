@@ -51,9 +51,9 @@ It is a good fit for teams that want:
 
 Today the plugin is intentionally focused. It ships one rule that targets one common TypeScript code smell:
 
-| Rule | Description | Fixable | Recommended | Strict |
-|------|-------------|---------|-------------|--------|
-| [no-inline-interface-object-types](https://drsmile444.github.io/eslint-plugin-lintlord/rules/no-inline-interface-object-types) | Disallow inline object type literals and extract them to named interfaces | ✅ | ⚠️ warn | ❌ error |
+| Rule                                                                                                                           | Description                                                               | Fixable | Recommended | Strict   |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- | ------- | ----------- | -------- |
+| [no-inline-interface-object-types](https://drsmile444.github.io/eslint-plugin-lintlord/rules/no-inline-interface-object-types) | Disallow inline object type literals and extract them to named interfaces | ✅      | ⚠️ warn     | ❌ error |
 
 The rule checks inline object types inside:
 
@@ -207,10 +207,10 @@ export default [
 
 ## Configs
 
-| Config | Description |
-|--------|-------------|
-| `recommended` | Enables all rules at `warn` for gradual adoption |
-| `strict` | Enables all rules at `error` and turns on `autofix` where supported |
+| Config        | Description                                                         |
+| ------------- | ------------------------------------------------------------------- |
+| `recommended` | Enables all rules at `warn` for gradual adoption                    |
+| `strict`      | Enables all rules at `error` and turns on `autofix` where supported |
 
 `recommended` is a good default if you want the plugin to guide cleanup over time.
 

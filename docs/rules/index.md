@@ -4,9 +4,9 @@
 
 All rules provided by `eslint-plugin-lintlord`:
 
-| Rule | Description | Fixable | Recommended | Strict |
-|------|-------------|---------|-------------|--------|
-| [no-inline-interface-object-types](/rules/no-inline-interface-object-types) | Disallow inline object type literals; extract to named interfaces | ✅ | ⚠️ warn | ❌ error |
+| Rule                                                                        | Description                                                       | Fixable | Recommended | Strict   |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------- | ----------- | -------- |
+| [no-inline-interface-object-types](/rules/no-inline-interface-object-types) | Disallow inline object type literals; extract to named interfaces | ✅      | ⚠️ warn     | ❌ error |
 
 ## Configs
 
@@ -29,4 +29,3 @@ import lintlord from 'eslint-plugin-lintlord';
 
 export default [lintlord.configs.strict];
 ```
-

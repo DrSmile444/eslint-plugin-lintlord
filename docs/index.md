@@ -31,8 +31,8 @@ features:
 
 ## Rules at a glance
 
-| Rule | Description | Fixable |
-|------|-------------|---------|
+| Rule                                                                        | Description                                                       | Fixable                  |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------ |
 | [no-inline-interface-object-types](/rules/no-inline-interface-object-types) | Disallow inline object type literals; extract to named interfaces | ✅ Autofix / Suggestions |
 
 ---
@@ -40,4 +40,3 @@ features:
 ## License
 
 MIT © 2026-Present [Dmytro Vakulenko](https://github.com/DrSmile444) 🇺🇦
-
