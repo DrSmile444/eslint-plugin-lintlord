@@ -54,10 +54,10 @@ jobs:
         run: npm ci
 
       - name: Install TypeScript ${{ matrix.typescript-version }}
-        run: npm install --no-save typescript@${{ matrix.typescript-version }}
+        run: npm install --no-save --legacy-peer-deps typescript@${{ matrix.typescript-version }}
 
       - name: Verify TypeScript version
         run: npx tsc --version
 
       - name: Tests
-        run: npm run test:run
+        run: npm run test
