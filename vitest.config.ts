@@ -21,7 +21,5 @@ export default defineConfig({
     },
     setupFiles: ['./tests/setup.ts'],
   },
-  plugins: [
-    tsconfigPaths(),
-  ],
+  plugins: [tsconfigPaths()],
 });
