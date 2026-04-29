@@ -1,5 +1,5 @@
 /**
- * @fileoverview Lintlord ESLint plugin/config:
+ * @file Lintlord ESLint plugin/config:
  * Disallow inline object type literals inside interface property types, function/method/arrow
  * parameters, and return types — offering a suggestion (or autofix) to extract them into
  * named interfaces.
@@ -55,7 +55,6 @@
  *   export default [
  *     ...lintlordEslint,
  *   ];
- *
  * @author Dmytro Vakulenko
  * @version 2.0.0
  */
@@ -70,15 +69,14 @@ export const RULE_NAME = 'no-inline-interface-object-types';
 /**
  * Convert a string to PascalCase.
  * Keeps alphanumerics and splits on non-alphanumeric boundaries.
- *
  * @param {string} input
  * @returns {string}
  */
 function toPascalCase(input) {
   return String(input)
-    .replaceAll(/[^a-zA-Z0-9]+/g, ' ')
+    .replaceAll(/[^a-z0-9]+/gi, ' ')
     .trim()
-    .split(/\s+/g)
+    .split(/\s+/)
     .filter(Boolean)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join('');
@@ -90,7 +88,6 @@ function toPascalCase(input) {
  * - classes -> class
  * - events -> event
  * - access -> access (protected)
- *
  * @param {string} name
  * @returns {string}
  */
@@ -121,7 +118,6 @@ function singularize(name) {
 
 /**
  * Build an interface name from one or more PascalCase name segments joined together.
- *
  * @param {string[]} segments
  * @returns {string}
  */
@@ -132,7 +128,6 @@ function buildNameFromSegments(segments) {
 /**
  * Build extracted interface name for an interface property (Strategy A):
  * ContainingInterfaceName + SingularizedPropertyName
- *
  * @param {string} parentName
  * @param {string} propertyName
  * @returns {string}
@@ -146,7 +141,6 @@ function buildInterfacePropertyName(parentName, propertyName) {
 
 /**
  * Walk child properties of an AST node onto a stack, skipping non-AST fields.
- *
  * @param {any} node
  * @param {any[]} stack
  * @returns {void}
@@ -169,7 +163,6 @@ function pushChildNodes(node, stack) {
 
 /**
  * Fallback iterative search for TSTypeLiteral inside an unknown node type.
- *
  * @param {any} node
  * @returns {any | null}
  */
@@ -200,7 +193,6 @@ function findTypeLiteralIterative(node) {
 /**
  * Finds the first TSTypeLiteral node inside a type annotation tree.
  * Returns the node itself so we can replace exactly that literal in the suggestion fix.
- *
  * @param {any} node
  * @returns {any | null}
  */
@@ -280,7 +272,6 @@ function findFirstTypeLiteral(node) {
 /**
  * Determine whether a TSInterfaceDeclaration is exported.
  * In TypeScript-ESTree, `export interface X {}` is wrapped in ExportNamedDeclaration.
- *
  * @param {any} interfaceNode TSInterfaceDeclaration
  * @returns {boolean}
  */
@@ -292,7 +283,6 @@ function isExportedInterface(interfaceNode) {
 
 /**
  * Determine whether a FunctionDeclaration or VariableDeclaration is directly exported.
- *
  * @param {any} node FunctionDeclaration | VariableDeclaration | ClassDeclaration
  * @returns {boolean}
  */
@@ -304,7 +294,6 @@ function isDirectlyExported(node) {
 
 /**
  * Resolve the property name string from a TSPropertySignature key node.
- *
  * @param {any} key
  * @returns {string}
  */
@@ -323,7 +312,6 @@ function resolvePropertyName(key) {
 /**
  * Extract a simple string name from a function/method key node.
  * Returns null when the name cannot be statically determined.
- *
  * @param {any} keyNode  Identifier | Literal | PrivateIdentifier | computed key
  * @returns {string | null}
  */
@@ -347,7 +335,6 @@ function resolveKeyName(keyNode) {
  * Walk up from a MethodDefinition node to the enclosing ClassDeclaration/ClassExpression
  * and return its name, or "Class" if anonymous/not found.
  * Uses at most 2 parent hops (MethodDefinition -> ClassBody -> ClassDecl).
- *
  * @param {any} methodDefinitionNode MethodDefinition
  * @returns {string}
  */
@@ -373,7 +360,6 @@ function getClassNameForMethod(methodDefinitionNode) {
 
 /**
  * Determine whether the class containing a MethodDefinition is directly exported.
- *
  * @param {any} methodDefinitionNode MethodDefinition
  * @returns {boolean}
  */
@@ -397,7 +383,6 @@ function isMethodInExportedClass(methodDefinitionNode) {
  * For an ArrowFunctionExpression, attempt to resolve the name it is assigned to
  * via its immediate parent VariableDeclarator.
  * Returns null when the arrow is not directly assigned to a named variable.
- *
  * @param {any} arrowNode ArrowFunctionExpression
  * @returns {string | null}
  */
@@ -419,7 +404,6 @@ function resolveArrowName(arrowNode) {
  * For an ArrowFunctionExpression, find the enclosing VariableDeclaration anchor node
  * (which can be inserted before) and determine whether it is exported.
  * Returns null when the arrow is not directly assigned to a variable.
- *
  * @param {any} arrowNode ArrowFunctionExpression
  * @returns {{ anchorNode: any; shouldExport: boolean } | null}
  */
@@ -446,7 +430,6 @@ function resolveArrowAnchor(arrowNode) {
 
 /**
  * Collect declared interface/type names from the whole program node into the provided set.
- *
  * @param {any} programNode
  * @param {Set<string>} declaredNames
  * @returns {void}
@@ -541,7 +524,6 @@ export const noInlineInterfaceObjectTypesRule = {
      * Returns the safe insertion range:
      * - Before the first leading comment if one exists (so the comment stays attached).
      * - Otherwise, before the node itself.
-     *
      * @param {any} anchorNode  The statement/declaration to insert before.
      * @returns {[number, number]}
      */
@@ -557,7 +539,6 @@ export const noInlineInterfaceObjectTypesRule = {
 
     /**
      * Build a unique interface name, appending a numeric suffix on collision.
-     *
      * @param {string} candidate
      * @returns {string}
      */
@@ -577,7 +558,6 @@ export const noInlineInterfaceObjectTypesRule = {
 
     /**
      * Build the fixer function: insert the new interface before anchorNode and replace the literal.
-     *
      * @param {any}     anchorNode       Statement/declaration to insert before.
      * @param {any}     typeLiteralNode  TSTypeLiteral to replace.
      * @param {string}  newName          Extracted interface name.
@@ -595,7 +575,6 @@ export const noInlineInterfaceObjectTypesRule = {
 
     /**
      * Build the ESLint report descriptor — direct fix when autofix is on, suggestion otherwise.
-     *
      * @param {any}     reportNode
      * @param {any}     anchorNode
      * @param {any}     typeLiteralNode
@@ -619,7 +598,6 @@ export const noInlineInterfaceObjectTypesRule = {
 
     /**
      * Core check: if the typeAnnotation node contains a qualifying TSTypeLiteral, report it.
-     *
      * @param {any}     typeAnnotationNode  The TSTypeAnnotation (or bare type node) to inspect.
      * @param {string}  candidateName       Pre-built candidate interface name.
      * @param {any}     anchorNode          Statement node to insert the new interface before.
@@ -646,8 +624,8 @@ export const noInlineInterfaceObjectTypesRule = {
 
     /**
      * Check all parameters of a callable for inline object type annotations.
-     *
      * @param {any[]}   params          Array of AST parameter nodes.
+     * @param parameters
      * @param {string}  callablePascal  PascalCase name of the callable (prefix).
      * @param {any}     anchorNode      Statement to insert extracted interfaces before.
      * @param {boolean} shouldExport    Whether to export the extracted interface.
@@ -665,7 +643,6 @@ export const noInlineInterfaceObjectTypesRule = {
 
     /**
      * Check the return type of a callable for an inline object type annotation.
-     *
      * @param {any}     returnTypeNode  TSTypeAnnotation node for the return type (node.returnType).
      * @param {string}  callablePascal  PascalCase name of the callable.
      * @param {any}     anchorNode      Statement to insert extracted interfaces before.

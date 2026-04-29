@@ -1,26 +1,28 @@
+import tseslint from 'typescript-eslint';
+
 /**
- * @description ESLint config for TypeScript and test file overrides. Enforces TS-specific rules and disables conflicting JS rules.
+ * @description TypeScript-specific rule overrides: enables TS equivalents of base JS rules,
+ * disables conflicting base rules, and enforces TypeScript best practices.
  * @author Dmytro Vakulenko
  */
-export default [
+export default tseslint.config(
   {
     name: 'overrides-ts',
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx,mts,cts}'],
     rules: {
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
       'import/prefer-default-export': 'off',
-      'import/no-unresolved': 'off', // for path aliases
+      'import/no-unresolved': 'off',
 
-      // prefer the TS-specific version of these:
       'no-useless-constructor': 'off',
       '@typescript-eslint/no-useless-constructor': 'error',
 
       'no-shadow': 'off',
       '@typescript-eslint/no-shadow': 'error',
 
-      // disable base rule; @typescript-eslint/no-unused-vars is a superset
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
+
       '@typescript-eslint/consistent-type-imports': [
         'error',
         {
@@ -29,33 +31,18 @@ export default [
           fixStyle: 'separate-type-imports',
         },
       ],
-      '@typescript-eslint/switch-exhaustiveness-check': [
-        'error',
-        { allowDefaultCaseForExhaustiveSwitch: true, considerDefaultExhaustiveForUnions: true },
-      ],
+      '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
       '@typescript-eslint/array-type': 'error',
+      '@typescript-eslint/prefer-readonly': 'error',
+
+      'no-undef': 'off',
+
+      // TypeScript compiler handles module resolution — n plugin doesn't understand
+      // extensionless TS imports or path aliases, so these produce false positives.
+      'n/no-missing-import': 'off',
+      'n/no-unresolved': 'off',
     },
   },
-  // Test-file override
-  {
-    name: 'overrides-test',
-    files: ['**/*.test.ts', '**/*.spec.ts'],
-    languageOptions: {
-      globals: {
-        describe: 'readonly',
-        it: 'readonly',
-        test: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        vi: 'readonly',
-      },
-    },
-    rules: {
-      '@typescript-eslint/unbound-method': 'off',
-    },
-  },
-  // Disable no-extraneous-class for module files (e.g. NestJS *.module.ts)
   {
     name: 'overrides-modules',
     files: ['**/*.module.{ts,tsx}'],
@@ -71,7 +58,7 @@ export default [
       'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     },
   },
-  // ESLint rule implementation files must use PascalCase AST node type names as visitor keys
+  // ESLint rule implementation files use PascalCase AST node type names as visitor keys
   {
     name: 'overrides-eslint-rule-source',
     files: ['src/rules/**/*.ts'],
@@ -79,4 +66,12 @@ export default [
       '@typescript-eslint/naming-convention': 'off',
     },
   },
-];
+  // Library index/entry-point files are intentional public API, not accidental barrel files
+  {
+    name: 'overrides-library-index',
+    files: ['src/index.ts', 'src/**/index.ts'],
+    rules: {
+      'no-barrel-files/no-barrel-files': 'off',
+    },
+  },
+);
