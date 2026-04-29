@@ -1,10 +1,10 @@
 import type { ESLint, Linter } from 'eslint';
 
-import { noInlineInterfaceObjectTypesRule, noInlineInterfaceObjectTypesRuleName } from './rules';
+import { noInlineInterfaceObjectTypesRule, noInlineInterfaceObjectTypesRuleName, preferLoggerRule, preferLoggerRuleName } from './rules';
 
 // Plugin metadata — kept in sync with package.json
 const pluginName = 'eslint-plugin-lintlord';
-const pluginVersion = '1.1.0';
+const pluginVersion = '1.2.0';
 
 // ---------------------------------------------------------------------------
 // Plugin object
@@ -12,6 +12,7 @@ const pluginVersion = '1.1.0';
 
 const rules = {
   [noInlineInterfaceObjectTypesRuleName]: noInlineInterfaceObjectTypesRule,
+  [preferLoggerRuleName]: preferLoggerRule,
 };
 
 const plugin = {
@@ -41,6 +42,7 @@ const recommended: Linter.Config = {
   },
   rules: {
     [`lintlord/${noInlineInterfaceObjectTypesRuleName}`]: 'warn',
+    [`lintlord/${preferLoggerRuleName}`]: 'error',
   },
 };
 
@@ -55,6 +57,7 @@ const strict: Linter.Config = {
   },
   rules: {
     [`lintlord/${noInlineInterfaceObjectTypesRuleName}`]: ['error', { autofix: true }],
+    [`lintlord/${preferLoggerRuleName}`]: ['error', { mode: 'all' }],
   },
 };
 
@@ -69,3 +72,5 @@ export default plugin;
 export { rules };
 
 export { noInlineInterfaceObjectTypesRule, noInlineInterfaceObjectTypesRuleName } from './rules';
+
+export { preferLoggerRule, preferLoggerRuleName } from './rules';

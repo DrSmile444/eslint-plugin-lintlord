@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.0
+## 1.2.0
 
 ### ESLint config modernisation & TypeScript 6 support
 
@@ -18,6 +18,22 @@
   - Replaced `||` with `??` (nullish coalescing) throughout the rule utilities
   - Removed dead-code guards that TypeScript type guarantees make impossible
   - Added JSDoc `@param` / `@returns` tags to all exported and non-trivial functions
+- Added TypeScript version compatibility CI matrix (TypeScript 4, 5, 6)
+
+---
+
+## 1.1.0 — 2026-03-12
+
+### ✨ New Rule: `prefer-logger`
+
+- Added [`prefer-logger`](/rules/prefer-logger) rule
+  - `log-only` mode (default): flags `console.log` as a debug tool and suggests replacing it with `console.info` for intentional output
+  - `all` mode: bans every `console.*` call, enforcing a dedicated logger (e.g. pino, winston)
+  - Provides a one-click suggestion to upgrade `console.log` → `console.info` in `log-only` mode
+  - Included in `recommended` config at `warn` with `mode: 'log-only'`
+  - Included in `strict` config at `error` with `mode: 'all'`
+
+---
 
 ## 1.0.0
 

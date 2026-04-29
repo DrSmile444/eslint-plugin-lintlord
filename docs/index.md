@@ -31,9 +31,10 @@ features:
 
 ## Rules at a glance
 
-| Rule                                                                        | Description                                                       | Fixable                  |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------ |
-| [no-inline-interface-object-types](/rules/no-inline-interface-object-types) | Disallow inline object type literals; extract to named interfaces | ✅ Autofix / Suggestions |
+| Rule                                                                        | Description                                                          | Fixable                  |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------ |
+| [no-inline-interface-object-types](/rules/no-inline-interface-object-types) | Disallow inline object type literals; extract to named interfaces    | ✅ Autofix / Suggestions |
+| [prefer-logger](/rules/prefer-logger)                                       | Disallow `console.log` (or all `console` calls) in favor of a logger | 💡 Suggestions           |
 
 ---
 

@@ -186,3 +186,10 @@ The autofix (or suggestion) will:
   }
 }
 ```
+
+## Built-in configs
+
+| Config        | Severity | Options         |
+| ------------- | -------- | --------------- |
+| `recommended` | `warn`   |                 |
+| `strict`      | `error`  | `autofix: true` |
