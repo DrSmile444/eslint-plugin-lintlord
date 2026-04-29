@@ -1,8 +1,8 @@
 // Simple logger for ESLint configs with colored context
 /**
- *
- * @param context
- * @param method
+ * Returns a colored context prefix string for console output.
+ * @param context - The logger context label (e.g. 'node', 'tsconfig-utils').
+ * @param method - The console method name used to pick an ANSI color.
  */
 function colorContext(context, method) {
   const METHOD_COLORS = {
@@ -25,8 +25,8 @@ function colorContext(context, method) {
 }
 
 /**
- *
- * @param context
+ * Creates a namespaced logger that prefixes every message with a colored `[ESLint:<context>]` label.
+ * @param context - A short label identifying the config that owns this logger.
  */
 export function eslintLogger(context) {
   return {

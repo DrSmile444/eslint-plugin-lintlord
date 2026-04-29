@@ -51,8 +51,8 @@ const logger = eslintLogger('node');
  * export default createNodeConfig({ tsconfig: 'tsconfig.main.json' });
  */
 export function createNodeConfig(options = {}) {
-  const rootDir = options.rootDir || process.cwd();
-  const gitignorePath = options.gitignore || `${rootDir}/.gitignore`;
+  const rootDir = options.rootDir ?? process.cwd();
+  const gitignorePath = options.gitignore ?? `${rootDir}/.gitignore`;
 
   logger.info('Root directory:', rootDir);
   logger.info('Using .gitignore at:', gitignorePath);

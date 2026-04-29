@@ -20,7 +20,7 @@ const TSCONFIG_CANDIDATES = ['tsconfig.json', 'tsconfig.base.json', 'tsconfig.ma
  * @returns {string} Absolute path to the tsconfig file.
  */
 export function resolveTsconfigPath(options = {}) {
-  const rootDir = options.rootDir || process.cwd();
+  const rootDir = options.rootDir ?? process.cwd();
 
   if (options.tsconfig) {
     return path.resolve(rootDir, options.tsconfig);
@@ -94,8 +94,8 @@ export function resolveTsconfigPaths(tsconfigPath, visited = new Set()) {
         mergedPaths = { ...mergedPaths, ...referencesPaths };
       }
     }
-  } catch {
-    logger.warn(`Warning: Failed to resolve paths from ${tsconfigPath}`);
+  } catch (error) {
+    logger.warn(`Warning: Failed to resolve paths from ${tsconfigPath}:`, error.message);
   }
 
   return mergedPaths;

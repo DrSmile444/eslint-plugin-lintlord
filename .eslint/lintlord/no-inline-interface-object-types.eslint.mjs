@@ -624,8 +624,7 @@ export const noInlineInterfaceObjectTypesRule = {
 
     /**
      * Check all parameters of a callable for inline object type annotations.
-     * @param {any[]}   params          Array of AST parameter nodes.
-     * @param parameters
+     * @param {any[]}   parameters      Array of AST parameter nodes.
      * @param {string}  callablePascal  PascalCase name of the callable (prefix).
      * @param {any}     anchorNode      Statement to insert extracted interfaces before.
      * @param {boolean} shouldExport    Whether to export the extracted interface.

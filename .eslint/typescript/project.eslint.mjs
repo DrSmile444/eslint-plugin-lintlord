@@ -14,7 +14,7 @@ const logger = eslintLogger('typescript-project');
  * @returns {import('typescript-eslint').ConfigArray}
  */
 export function createProjectConfig(options = {}) {
-  const rootDir = options.rootDir || process.cwd();
+  const rootDir = options.rootDir ?? process.cwd();
   const tsconfigPath = resolveTsconfigPath(options);
 
   if (!fs.existsSync(tsconfigPath)) {
