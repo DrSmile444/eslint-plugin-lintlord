@@ -1,5 +1,5 @@
 import type { TSESTree } from '@typescript-eslint/utils';
-import { ESLintUtils } from '@typescript-eslint/utils';
+import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
 
 import type { MessageIds, PreferLoggerOptions } from './types';
 
@@ -10,9 +10,11 @@ const createRule = ESLintUtils.RuleCreator((name) => `https://drsmile444.github.
 /**
  * Returns true when the expression is a member access on the `console` global,
  * e.g. `console.log`, `console.info`.
+ * @param node - The MemberExpression node to inspect.
+ * @returns True if the object is the `console` identifier and the property is not computed.
  */
 function isConsoleMemberExpression(node: TSESTree.MemberExpression): boolean {
-  return node.object.type === 'Identifier' && node.object.name === 'console' && !node.computed;
+  return node.object.type === AST_NODE_TYPES.Identifier && node.object.name === 'console' && !node.computed;
 }
 
 export const preferLoggerRule = createRule<[PreferLoggerOptions], MessageIds>({
@@ -54,13 +56,13 @@ export const preferLoggerRule = createRule<[PreferLoggerOptions], MessageIds>({
       CallExpression(node: TSESTree.CallExpression) {
         const { callee } = node;
 
-        if (callee.type !== 'MemberExpression' || !isConsoleMemberExpression(callee)) {
+        if (callee.type !== AST_NODE_TYPES.MemberExpression || !isConsoleMemberExpression(callee)) {
           return;
         }
 
         const { property } = callee;
 
-        if (property.type !== 'Identifier') {
+        if (property.type !== AST_NODE_TYPES.Identifier) {
           return;
         }
 

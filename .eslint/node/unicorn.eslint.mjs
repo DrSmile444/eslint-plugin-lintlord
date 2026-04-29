@@ -24,6 +24,7 @@ export default [
             spec: true,
             param: true,
             Param: true,
+            rootDir: true,
           },
         },
       ],

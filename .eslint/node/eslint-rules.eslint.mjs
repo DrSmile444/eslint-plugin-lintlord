@@ -1,15 +1,35 @@
+import { defineConfig } from 'eslint/config';
+
 /**
- * @description ESLint config for rules specific to ESLint config files. Disables import/no-extraneous-dependencies and import/no-unresolved for config files.
+ * @description ESLint overrides for config files at the project root and in .eslint/.
+ * These files import devDependencies and don't need type-safe rules applied.
  * @author Dmytro Vakulenko
- * @see https://github.com/import-js/eslint-plugin-import
  */
-export default [
+export default defineConfig([
   {
-    name: 'eslint-rules',
-    files: ['./.eslint/**/*.{js,mjs,cjs,ts,tsx}', './eslint.config.mjs'],
+    name: 'eslint-rules/config-files',
+    files: ['./.eslint/**/*.{js,mjs,cjs,ts,tsx,mts}', './eslint.config.mjs', './vitest.config.ts', './*.config.{ts,js,mjs,cjs}'],
     rules: {
       'import/no-extraneous-dependencies': 'off',
       'import/no-unresolved': 'off',
+      'n/no-unpublished-import': 'off',
+      'n/no-missing-import': 'off',
+      'jsdoc/require-description': 'off',
+      'jsdoc/require-param-description': 'off',
+      'jsdoc/require-returns-description': 'off',
+      'jsdoc/require-returns': 'off',
+      'jsdoc/require-param-type': 'off',
+      'jsdoc/reject-any-type': 'off',
+      'jsdoc/check-param-names': 'off',
+      'jsdoc/check-tag-names': 'off',
+      'jsdoc/check-values': 'off',
+      'jsdoc/escape-inline-tags': 'off',
+      'jsdoc/tag-lines': 'off',
+      'depend/ban-dependencies': 'off',
+      'regexp/no-unused-capturing-group': 'off',
+      // Config files may call functions from unresolved devDeps — not a real issue
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
-];
+]);

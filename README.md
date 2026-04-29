@@ -242,9 +242,9 @@ export default [
 
 ## Configs
 
-| Config        | Description                                                         |
-| ------------- | ------------------------------------------------------------------- |
-| `recommended` | Enables `no-inline-interface-object-types` at `warn` and `prefer-logger` at `error` |
+| Config        | Description                                                                                                                   |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `recommended` | Enables `no-inline-interface-object-types` at `warn` and `prefer-logger` at `error`                                           |
 | `strict`      | Enables `no-inline-interface-object-types` at `error` with `autofix: true`, and `prefer-logger` at `error` with `mode: 'all'` |
 
 `recommended` is a good default if you want gradual type cleanup while still treating stray `console.log` calls as committed-code mistakes.

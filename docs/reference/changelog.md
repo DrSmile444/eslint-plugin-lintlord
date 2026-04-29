@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+
+### TypeScript 6 support
+
+- Extended peer dependency support to TypeScript 6 (`^4 || ^5 || ^6`)
+- Upgraded `@typescript-eslint/*` packages to 8.59.1 (supports TypeScript up to 6.x)
+
+---
+
 ## 1.1.0 — 2026-03-12
 
 ### ✨ New Rule: `prefer-logger`

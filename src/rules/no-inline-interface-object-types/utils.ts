@@ -1,4 +1,5 @@
 import type { TSESTree } from '@typescript-eslint/utils';
+import { AST_NODE_TYPES } from '@typescript-eslint/utils';
 
 // ---------------------------------------------------------------------------
 // Pure utilities
@@ -7,12 +8,14 @@ import type { TSESTree } from '@typescript-eslint/utils';
 /**
  * Convert a string to PascalCase.
  * Keeps alphanumerics and splits on non-alphanumeric boundaries.
+ * @param input - The string to convert.
+ * @returns The PascalCase representation of the input.
  */
 export function toPascalCase(input: string): string {
-  return String(input)
-    .replaceAll(/[^a-zA-Z0-9]+/g, ' ')
+  return input
+    .replaceAll(/[^a-z0-9]+/gi, ' ')
     .trim()
-    .split(/\s+/g)
+    .split(/\s+/)
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
@@ -24,34 +27,37 @@ export function toPascalCase(input: string): string {
  * - classes -> class
  * - events -> event
  * - access -> access (protected)
+ * @param name - The property name to singularize.
+ * @returns The singularized form of the name.
  */
 export function singularize(name: string): string {
-  const normalized = String(name);
-  const lower = normalized.toLowerCase();
+  const lower = name.toLowerCase();
 
   if (lower.endsWith('ss') || lower.endsWith('us') || lower.endsWith('is') || lower.endsWith('as')) {
-    return normalized;
+    return name;
   }
 
-  if (lower.endsWith('ies') && normalized.length > 3) {
-    return `${normalized.slice(0, -3)}y`;
+  if (lower.endsWith('ies') && name.length > 3) {
+    return `${name.slice(0, -3)}y`;
   }
 
   // classes -> class, boxes -> box, watches -> watch
-  if (/(sses|shes|ches|xes|zes)$/i.test(normalized) && normalized.length > 2) {
-    return normalized.slice(0, -2);
+  if (/(?:sses|shes|ches|xes|zes)$/i.test(name) && name.length > 2) {
+    return name.slice(0, -2);
   }
 
   // events -> event
-  if (lower.endsWith('s') && !lower.endsWith('ss') && normalized.length > 1) {
-    return normalized.slice(0, -1);
+  if (lower.endsWith('s') && !lower.endsWith('ss') && name.length > 1) {
+    return name.slice(0, -1);
   }
 
-  return normalized;
+  return name;
 }
 
 /**
  * Build an interface name from one or more PascalCase name segments joined together.
+ * @param segments - Array of name segments to combine.
+ * @returns The combined interface name in PascalCase.
  */
 export function buildNameFromSegments(segments: string[]): string {
   return segments.map((seg) => toPascalCase(seg) || 'Unknown').join('');
@@ -60,6 +66,9 @@ export function buildNameFromSegments(segments: string[]): string {
 /**
  * Build extracted interface name for an interface property:
  * ContainingInterfaceName + SingularizedPropertyName
+ * @param parentName - The name of the containing interface.
+ * @param propertyName - The property name to singularize and append.
+ * @returns The constructed interface name.
  */
 export function buildInterfacePropertyName(parentName: string, propertyName: string): string {
   const parentPart = toPascalCase(parentName) || 'Parent';
@@ -70,6 +79,8 @@ export function buildInterfacePropertyName(parentName: string, propertyName: str
 
 /**
  * Walk child properties of an AST node onto a stack, skipping non-AST fields.
+ * @param node - The AST node whose children to push.
+ * @param stack - The traversal stack to push children onto.
  */
 export function pushChildNodes(node: Record<string, unknown>, stack: unknown[]): void {
   for (const [key, value] of Object.entries(node)) {
@@ -89,9 +100,11 @@ export function pushChildNodes(node: Record<string, unknown>, stack: unknown[]):
 
 /**
  * Fallback iterative search for TSTypeLiteral inside an unknown node type.
+ * @param node - The AST node to search within.
+ * @returns The first TSTypeLiteral found, or null if none exists.
  */
 function findTypeLiteralIterative(node: TSESTree.Node): TSESTree.TSTypeLiteral | null {
-  const visited = new WeakSet<object>();
+  const visited = new WeakSet();
   const stack: unknown[] = [node];
 
   while (stack.length > 0) {
@@ -102,7 +115,7 @@ function findTypeLiteralIterative(node: TSESTree.Node): TSESTree.TSTypeLiteral |
     } else {
       visited.add(current);
 
-      if ((current as unknown as TSESTree.Node).type === 'TSTypeLiteral') {
+      if ((current as unknown as TSESTree.Node).type === AST_NODE_TYPES.TSTypeLiteral) {
         return current as unknown as TSESTree.TSTypeLiteral;
       }
 
@@ -116,68 +129,68 @@ function findTypeLiteralIterative(node: TSESTree.Node): TSESTree.TSTypeLiteral |
 /**
  * Finds the first TSTypeLiteral node inside a type annotation tree.
  * Returns the node itself so we can replace exactly that literal in the suggestion fix.
+ * @param node - The AST node to search within.
+ * @returns The first TSTypeLiteral found, or null if none exists.
  */
 export function findFirstTypeLiteral(node: TSESTree.Node | null | undefined): TSESTree.TSTypeLiteral | null {
   if (!node) {
     return null;
   }
 
-  if (node.type === 'TSTypeLiteral') {
-    return node;
-  }
-
   switch (node.type) {
-    case 'TSTypeAnnotation': {
+    case AST_NODE_TYPES.TSTypeLiteral: {
+      return node;
+    }
+
+    case AST_NODE_TYPES.TSTypeAnnotation: {
       return findFirstTypeLiteral(node.typeAnnotation);
     }
 
-    case 'TSArrayType': {
+    case AST_NODE_TYPES.TSArrayType: {
       return findFirstTypeLiteral(node.elementType);
     }
 
-    case 'TSUnionType':
-    case 'TSIntersectionType': {
-      return (Array.isArray(node.types) && node.types.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean)) || null;
+    case AST_NODE_TYPES.TSUnionType:
+    case AST_NODE_TYPES.TSIntersectionType: {
+      return node.types.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean) ?? null;
     }
 
-    case 'TSTypeOperator': {
+    case AST_NODE_TYPES.TSTypeOperator: {
       return findFirstTypeLiteral(node.typeAnnotation);
     }
 
-    case 'TSIndexedAccessType': {
-      return findFirstTypeLiteral(node.objectType) || findFirstTypeLiteral(node.indexType);
+    case AST_NODE_TYPES.TSIndexedAccessType: {
+      return findFirstTypeLiteral(node.objectType) ?? findFirstTypeLiteral(node.indexType);
     }
 
-    case 'TSConditionalType': {
+    case AST_NODE_TYPES.TSConditionalType: {
       return (
-        findFirstTypeLiteral(node.checkType) ||
-        findFirstTypeLiteral(node.extendsType) ||
-        findFirstTypeLiteral(node.trueType) ||
+        findFirstTypeLiteral(node.checkType) ??
+        findFirstTypeLiteral(node.extendsType) ??
+        findFirstTypeLiteral(node.trueType) ??
         findFirstTypeLiteral(node.falseType)
       );
     }
 
-    case 'TSInferType': {
+    case AST_NODE_TYPES.TSInferType: {
       return findFirstTypeLiteral(node.typeParameter);
     }
 
-    case 'TSMappedType': {
-      return findFirstTypeLiteral(node.typeAnnotation) || findFirstTypeLiteral(node.nameType);
+    case AST_NODE_TYPES.TSMappedType: {
+      return findFirstTypeLiteral(node.typeAnnotation) ?? findFirstTypeLiteral(node.nameType);
     }
 
-    case 'TSTypeReference': {
-      if (node.typeArguments && node.typeArguments.type === 'TSTypeParameterInstantiation' && Array.isArray(node.typeArguments.params)) {
-        return node.typeArguments.params.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean) || null;
+    case AST_NODE_TYPES.TSTypeReference: {
+      if (node.typeArguments) {
+        return node.typeArguments.params.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean) ?? null;
       }
 
       return null;
     }
 
-    case 'TSFunctionType':
-    case 'TSConstructorType': {
-      const fromParameters = Array.isArray(node.params) && node.params.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean);
-
-      return fromParameters || findFirstTypeLiteral(node.returnType);
+    case AST_NODE_TYPES.TSFunctionType:
+    case AST_NODE_TYPES.TSConstructorType: {
+      return node.params.map((typeNode) => findFirstTypeLiteral(typeNode)).find(Boolean) ?? findFirstTypeLiteral(node.returnType) ?? null;
     }
 
     default: {
@@ -188,11 +201,13 @@ export function findFirstTypeLiteral(node: TSESTree.Node | null | undefined): TS
 
 /**
  * Determine whether a TSInterfaceDeclaration is exported.
+ * @param interfaceNode - The interface declaration node to check.
+ * @returns True if the interface is directly exported.
  */
 export function isExportedInterface(interfaceNode: TSESTree.TSInterfaceDeclaration): boolean {
   const parentNode = interfaceNode.parent;
 
-  if (!parentNode || parentNode.type !== 'ExportNamedDeclaration') {
+  if (parentNode.type !== AST_NODE_TYPES.ExportNamedDeclaration) {
     return false;
   }
 
@@ -201,11 +216,13 @@ export function isExportedInterface(interfaceNode: TSESTree.TSInterfaceDeclarati
 
 /**
  * Determine whether a FunctionDeclaration, VariableDeclaration, or ClassDeclaration is directly exported.
+ * @param node - The AST node to check.
+ * @returns True if the node is directly exported.
  */
 export function isDirectlyExported(node: TSESTree.Node): boolean {
   const parentNode = node.parent;
 
-  if (!parentNode || parentNode.type !== 'ExportNamedDeclaration') {
+  if (parentNode?.type !== AST_NODE_TYPES.ExportNamedDeclaration) {
     return false;
   }
 
@@ -214,17 +231,19 @@ export function isDirectlyExported(node: TSESTree.Node): boolean {
 
 /**
  * Resolve the property name string from a TSPropertySignature key node.
+ * @param key - The key node of the property signature.
+ * @returns The resolved property name string, or 'field' as a fallback.
  */
 export function resolvePropertyName(key: TSESTree.Node | null | undefined): string {
   if (!key) {
     return 'field';
   }
 
-  if (key.type === 'Identifier') {
+  if (key.type === AST_NODE_TYPES.Identifier) {
     return key.name;
   }
 
-  if (key.type === 'Literal' && typeof key.value === 'string') {
+  if (key.type === AST_NODE_TYPES.Literal && typeof key.value === 'string') {
     return key.value;
   }
 
@@ -234,17 +253,19 @@ export function resolvePropertyName(key: TSESTree.Node | null | undefined): stri
 /**
  * Extract a simple string name from a function/method key node.
  * Returns null when the name cannot be statically determined.
+ * @param keyNode - The key node to extract a name from.
+ * @returns The resolved name string, or null if not determinable.
  */
 export function resolveKeyName(keyNode: TSESTree.Node | null | undefined): string | null {
   if (!keyNode) {
     return null;
   }
 
-  if (keyNode.type === 'Identifier' || keyNode.type === 'PrivateIdentifier') {
+  if (keyNode.type === AST_NODE_TYPES.Identifier || keyNode.type === AST_NODE_TYPES.PrivateIdentifier) {
     return keyNode.name;
   }
 
-  if (keyNode.type === 'Literal' && typeof keyNode.value === 'string') {
+  if (keyNode.type === AST_NODE_TYPES.Literal && typeof keyNode.value === 'string') {
     return keyNode.value;
   }
 
@@ -254,42 +275,22 @@ export function resolveKeyName(keyNode: TSESTree.Node | null | undefined): strin
 /**
  * Walk up from a MethodDefinition node to the enclosing ClassDeclaration/ClassExpression
  * and return its name, or "Class" if anonymous/not found.
+ * @param methodDefinitionNode - The method definition node to inspect.
+ * @returns The class name, or 'Class' if not determinable.
  */
 export function getClassNameForMethod(methodDefinitionNode: TSESTree.MethodDefinition): string {
-  const classBody = methodDefinitionNode.parent;
+  const classDecl = methodDefinitionNode.parent.parent;
 
-  if (!classBody || classBody.type !== 'ClassBody') {
-    return 'Class';
-  }
-
-  const classDecl = classBody.parent;
-
-  if (!classDecl) {
-    return 'Class';
-  }
-
-  if (classDecl.type === 'ClassDeclaration' || classDecl.type === 'ClassExpression') {
-    return classDecl.id?.name || 'Class';
-  }
-
-  return 'Class';
+  return classDecl.id?.name ?? 'Class';
 }
 
 /**
  * Determine whether the class containing a MethodDefinition is directly exported.
+ * @param methodDefinitionNode - The method definition node to inspect.
+ * @returns True if the enclosing class is directly exported.
  */
 export function isMethodInExportedClass(methodDefinitionNode: TSESTree.MethodDefinition): boolean {
-  const classBody = methodDefinitionNode.parent;
-
-  if (!classBody || classBody.type !== 'ClassBody') {
-    return false;
-  }
-
-  const classDecl = classBody.parent;
-
-  if (!classDecl) {
-    return false;
-  }
+  const classDecl = methodDefinitionNode.parent.parent;
 
   return isDirectlyExported(classDecl);
 }
@@ -297,15 +298,17 @@ export function isMethodInExportedClass(methodDefinitionNode: TSESTree.MethodDef
 /**
  * For an ArrowFunctionExpression, attempt to resolve the name it is assigned to
  * via its immediate parent VariableDeclarator.
+ * @param arrowNode - The arrow function expression node.
+ * @returns The variable name, or null if not assignable.
  */
 export function resolveArrowName(arrowNode: TSESTree.ArrowFunctionExpression): string | null {
   const declarator = arrowNode.parent;
 
-  if (!declarator || declarator.type !== 'VariableDeclarator') {
+  if (declarator.type !== AST_NODE_TYPES.VariableDeclarator) {
     return null;
   }
 
-  if (declarator.id?.type === 'Identifier') {
+  if (declarator.id.type === AST_NODE_TYPES.Identifier) {
     return declarator.id.name;
   }
 
@@ -320,31 +323,31 @@ export interface ResolveArrowAnchorReturn {
 /**
  * For an ArrowFunctionExpression, find the enclosing VariableDeclaration anchor node
  * and determine whether it is exported.
+ * @param arrowNode - The arrow function expression node.
+ * @returns The anchor node and export flag, or null if not applicable.
  */
 export function resolveArrowAnchor(arrowNode: TSESTree.ArrowFunctionExpression): ResolveArrowAnchorReturn | null {
   const declarator = arrowNode.parent;
 
-  if (!declarator || declarator.type !== 'VariableDeclarator') {
+  if (declarator.type !== AST_NODE_TYPES.VariableDeclarator) {
     return null;
   }
 
   const variableDecl = declarator.parent;
 
-  if (!variableDecl || variableDecl.type !== 'VariableDeclaration') {
-    return null;
-  }
-
   const isExported = isDirectlyExported(variableDecl);
-  const anchorNode = isExported ? variableDecl.parent! : variableDecl;
+  const anchorNode = isExported ? variableDecl.parent : variableDecl;
 
   return { anchorNode, shouldExport: isExported };
 }
 
 /**
  * Collect declared interface/type names from the whole program node into the provided set.
+ * @param programNode - The root program node to traverse.
+ * @param declaredNames - The set to populate with discovered names.
  */
 export function collectDeclaredNames(programNode: TSESTree.Program, declaredNames: Set<string>): void {
-  const visited = new WeakSet<object>();
+  const visited = new WeakSet();
   const stack: unknown[] = [programNode];
 
   while (stack.length > 0) {
@@ -357,11 +360,11 @@ export function collectDeclaredNames(programNode: TSESTree.Program, declaredName
 
       const node = currentNode as unknown as TSESTree.Node;
 
-      if (node.type === 'TSInterfaceDeclaration' && node.id?.name) {
+      if (node.type === AST_NODE_TYPES.TSInterfaceDeclaration && node.id.name) {
         declaredNames.add(node.id.name);
       }
 
-      if (node.type === 'TSTypeAliasDeclaration' && node.id?.name) {
+      if (node.type === AST_NODE_TYPES.TSTypeAliasDeclaration && node.id.name) {
         declaredNames.add(node.id.name);
       }
 

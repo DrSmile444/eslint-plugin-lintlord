@@ -2,6 +2,9 @@ import { defineConfig } from 'vitepress';
 
 import { version } from '../../package.json';
 
+/**
+ * Resolve the VitePress base URL: root in dev, repository-prefixed path on GitHub Pages.
+ */
 function resolveBase(): string {
   if (!process.env.GITHUB_ACTIONS) {
     return '/';

@@ -11,27 +11,48 @@ const PKG = 'package.json';
 const PKG_ORIGINAL = 'package-original.json';
 const SPLIT_SCRIPT = path.join('scripts', 'split-plain-code.ts');
 
+/**
+ * Spawn a child process and resolve with its exit code.
+ * @param cmd
+ * @param commandArguments
+ */
 function run(cmd: string, commandArguments: string[]): Promise<number> {
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, commandArguments, { stdio: 'inherit' });
 
     child.on('error', reject);
-    child.on('close', (code) => resolve(code ?? 1));
+
+    child.on('close', (code) => {
+      resolve(code ?? 1);
+    });
   });
 }
 
+/**
+ * Read and parse a JSON file.
+ * @param filePath
+ */
 async function readJson(filePath: string): Promise<Json> {
   const raw = await fs.readFile(filePath, 'utf8');
 
   return JSON.parse(raw) as Json;
 }
 
+/**
+ * Serialize and write a JSON object to a file.
+ * @param filePath
+ * @param json
+ */
 async function writeJson(filePath: string, json: Json): Promise<void> {
   const raw = `${JSON.stringify(json, null, 2)}\n`;
 
   await fs.writeFile(filePath, raw, 'utf8');
 }
 
+/**
+ * Check whether a file exists on disk.
+ * @param filePath
+ */
 async function exists(filePath: string): Promise<boolean> {
   try {
     await fs.access(filePath);
@@ -42,6 +63,9 @@ async function exists(filePath: string): Promise<boolean> {
   }
 }
 
+/**
+ * Back up package.json, run the split script, merge the output back, then clean up.
+ */
 async function main(): Promise<void> {
   const currentWorkingDirectory = process.cwd();
   const packagePath = path.join(currentWorkingDirectory, PKG);
