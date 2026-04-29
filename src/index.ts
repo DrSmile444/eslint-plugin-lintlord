@@ -1,10 +1,10 @@
-import type { Linter } from 'eslint';
+import type { ESLint, Linter } from 'eslint';
 
 import { noInlineInterfaceObjectTypesRule, noInlineInterfaceObjectTypesRuleName } from './rules';
 
 // Plugin metadata — kept in sync with package.json
 const pluginName = 'eslint-plugin-lintlord';
-const pluginVersion = '1.0.1';
+const pluginVersion = '1.1.0';
 
 // ---------------------------------------------------------------------------
 // Plugin object
@@ -37,7 +37,7 @@ const plugin = {
 const recommended: Linter.Config = {
   name: 'lintlord/recommended',
   plugins: {
-    lintlord: plugin as any,
+    lintlord: plugin as unknown as ESLint.Plugin,
   },
   rules: {
     [`lintlord/${noInlineInterfaceObjectTypesRuleName}`]: 'warn',
@@ -51,7 +51,7 @@ const recommended: Linter.Config = {
 const strict: Linter.Config = {
   name: 'lintlord/strict',
   plugins: {
-    lintlord: plugin as any,
+    lintlord: plugin as unknown as ESLint.Plugin,
   },
   rules: {
     [`lintlord/${noInlineInterfaceObjectTypesRuleName}`]: ['error', { autofix: true }],

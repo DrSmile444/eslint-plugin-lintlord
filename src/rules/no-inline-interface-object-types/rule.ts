@@ -1,5 +1,5 @@
-import type { TSESTree } from '@typescript-eslint/utils';
-import { ESLintUtils } from '@typescript-eslint/utils';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+import { AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
 
 import type { MessageIds, NoInlineInterfaceObjectTypesOptions } from './types';
 import {
@@ -87,9 +87,11 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
      * Returns the safe insertion range:
      * - Before the first leading comment if one exists (so the comment stays attached).
      * - Otherwise, before the node itself.
+     * @param anchorNode - The AST node before which the interface will be inserted.
+     * @returns The source range to insert before.
      */
     function getInsertionRange(anchorNode: TSESTree.Node): readonly [number, number] {
-      const leadingComments = sourceCode.getCommentsBefore(anchorNode) || [];
+      const leadingComments = sourceCode.getCommentsBefore(anchorNode);
 
       if (leadingComments.length > 0) {
         return leadingComments[0].range;
@@ -100,6 +102,8 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
     /**
      * Build a unique interface name, appending a numeric suffix on collision.
+     * @param candidate - The base candidate name.
+     * @returns A unique name not yet declared in the file.
      */
     function resolveUniqueName(candidate: string): string {
       if (!declaredNames.has(candidate)) {
@@ -108,15 +112,20 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
       let index = 2;
 
-      while (declaredNames.has(`${candidate}${index}`)) {
+      while (declaredNames.has(`${candidate}${String(index)}`)) {
         index += 1;
       }
 
-      return `${candidate}${index}`;
+      return `${candidate}${String(index)}`;
     }
 
     /**
      * Build the fixer function: insert the new interface before anchorNode and replace the literal.
+     * @param anchorNode - The anchor node before which the interface is inserted.
+     * @param typeLiteralNode - The inline type literal to replace.
+     * @param newName - The generated interface name.
+     * @param shouldExport - Whether the new interface should be exported.
+     * @returns An ESLint fixer function that performs the code transformation.
      */
     function makeExtractFix(anchorNode: TSESTree.Node, typeLiteralNode: TSESTree.TSTypeLiteral, newName: string, shouldExport: boolean) {
       const literalText = sourceCode.getText(typeLiteralNode);
@@ -124,7 +133,7 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
       const declText = `${prefix}interface ${newName} ${literalText}\n\n`;
       const insertionRange = getInsertionRange(anchorNode);
 
-      return (fixer: { insertTextBeforeRange: Function; replaceText: Function }) => [
+      return (fixer: TSESLint.RuleFixer) => [
         fixer.insertTextBeforeRange(insertionRange, declText),
         fixer.replaceText(typeLiteralNode, newName),
       ];
@@ -132,6 +141,12 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
     /**
      * Build the ESLint report descriptor — direct fix when autofix is on, suggestion otherwise.
+     * @param reportNode - The node to attach the ESLint report to.
+     * @param anchorNode - The anchor node for the fixer insertion point.
+     * @param typeLiteralNode - The inline type literal to replace.
+     * @param newName - The generated interface name.
+     * @param shouldExport - Whether the new interface should be exported.
+     * @returns The ESLint report descriptor object.
      */
     function buildReport(
       reportNode: TSESTree.Node,
@@ -155,6 +170,11 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
     /**
      * Core check: if the typeAnnotation node contains a qualifying TSTypeLiteral, report it.
+     * @param typeAnnotationNode - The type annotation node to inspect.
+     * @param candidateName - The candidate name for the extracted interface.
+     * @param anchorNode - The anchor node for insertion.
+     * @param shouldExport - Whether the extracted interface should be exported.
+     * @param reportNode - The node to attach the ESLint report to.
      */
     function checkTypeAnnotation(
       typeAnnotationNode: TSESTree.Node,
@@ -182,6 +202,10 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
     /**
      * Check all parameters of a callable for inline object type annotations.
+     * @param parameters - The parameter list to check.
+     * @param callablePascal - The PascalCase name of the enclosing callable.
+     * @param anchorNode - The anchor node for insertion.
+     * @param shouldExport - Whether the extracted interface should be exported.
      */
     function checkParameters(
       parameters: TSESTree.Parameter[],
@@ -191,7 +215,7 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
     ): void {
       for (const param of parameters) {
         if ('typeAnnotation' in param && param.typeAnnotation) {
-          const paramNode = param.type === 'AssignmentPattern' ? param.left : param;
+          const paramNode = param.type === AST_NODE_TYPES.AssignmentPattern ? param.left : param;
           const paramName = resolvePropertyName(paramNode);
           const candidateName = buildNameFromSegments([callablePascal, paramName]);
 
@@ -202,6 +226,10 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
     /**
      * Check the return type of a callable for an inline object type annotation.
+     * @param returnTypeNode - The return type annotation node, if present.
+     * @param callablePascal - The PascalCase name of the enclosing callable.
+     * @param anchorNode - The anchor node for insertion.
+     * @param shouldExport - Whether the extracted interface should be exported.
      */
     function checkReturnType(
       returnTypeNode: TSESTree.TSTypeAnnotation | undefined,
@@ -232,17 +260,17 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
           return;
         }
 
-        const parentInterfaceName = node.id?.name;
+        const parentInterfaceName = node.id.name;
 
-        if (!parentInterfaceName || !node.body || !Array.isArray(node.body.body)) {
+        if (!parentInterfaceName) {
           return;
         }
 
-        const anchorNode = isExportedInterface(node) ? node.parent! : node;
+        const anchorNode = isExportedInterface(node) ? node.parent : node;
         const shouldExport = isExportedInterface(node);
 
         for (const member of node.body.body) {
-          if (member.type === 'TSPropertySignature' && member.typeAnnotation) {
+          if (member.type === AST_NODE_TYPES.TSPropertySignature && member.typeAnnotation) {
             const propertyName = resolvePropertyName(member.key);
             const candidateName = buildInterfacePropertyName(parentInterfaceName, propertyName);
 
@@ -253,8 +281,8 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
       FunctionDeclaration: (node: TSESTree.FunctionDeclaration) => {
         const functionName = node.id?.name;
-        const functionPascal = toPascalCase(functionName || 'Function');
-        const anchorNode = isDirectlyExported(node) ? node.parent! : node;
+        const functionPascal = toPascalCase(functionName ?? 'Function');
+        const anchorNode = isDirectlyExported(node) ? node.parent : node;
         const shouldExport = isDirectlyExported(node);
 
         if (shouldCheckFunctionParameters && Array.isArray(node.params)) {
@@ -268,14 +296,14 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
       MethodDefinition: (node: TSESTree.MethodDefinition) => {
         const methodName = resolveKeyName(node.key);
-        const methodPascal = toPascalCase(methodName || 'Method');
+        const methodPascal = toPascalCase(methodName ?? 'Method');
         const className = getClassNameForMethod(node);
-        const classDecl = node.parent?.parent;
+        const classDecl = node.parent.parent;
         const shouldExport = isMethodInExportedClass(node);
-        const anchorNode = shouldExport && classDecl ? classDecl.parent! : classDecl || node;
+        const anchorNode = shouldExport ? classDecl.parent : classDecl;
         const callable = node.value;
 
-        if (!callable || !Array.isArray(callable.params)) {
+        if (!Array.isArray(callable.params)) {
           return;
         }
 
@@ -299,7 +327,7 @@ export const noInlineInterfaceObjectTypesRule = createRule<[NoInlineInterfaceObj
 
         const { anchorNode, shouldExport } = arrowAnchor;
         const arrowName = resolveArrowName(node);
-        const arrowPascal = toPascalCase(arrowName || 'ArrowFunction');
+        const arrowPascal = toPascalCase(arrowName ?? 'ArrowFunction');
 
         if (shouldCheckArrowFunctionParameters && Array.isArray(node.params)) {
           checkParameters(node.params, arrowPascal, anchorNode, shouldExport);
